@@ -19,6 +19,7 @@ const he = {
     collection: "האוסף שלי",
     signIn: "כניסה",
     signOut: "יציאה",
+    menu: "תפריט",
   },
   stub: {
     next: "המשך",
@@ -341,6 +342,7 @@ const ar: Strings = {
     collection: "مجموعتي",
     signIn: "تسجيل الدخول",
     signOut: "تسجيل الخروج",
+    menu: "القائمة",
   },
   stub: {
     next: "التالي",
@@ -679,6 +681,7 @@ const en: Strings = {
     collection: "My collection",
     signIn: "Sign in",
     signOut: "Sign out",
+    menu: "Menu",
   },
   stub: {
     next: "Next",
