@@ -6,6 +6,8 @@ import { requireAuth } from "./middleware/auth";
 import { events } from "./routes/events";
 import { health } from "./routes/health";
 import { me } from "./routes/me";
+import { routes } from "./routes/routes";
+import { trees } from "./routes/trees";
 import { uploads } from "./routes/uploads";
 
 /**
@@ -22,6 +24,9 @@ const app = new Hono<AppEnv>();
 // in the order you register them, and that order is what makes these public.
 // ---------------------------------------------------------------------------
 app.route("/api/health", health);
+// Shade routing and trees: public, so planning a walk needs no account.
+app.route("/api/routes", routes);
+app.route("/api/trees", trees);
 
 // ---------------------------------------------------------------------------
 // Everything registered BELOW this line requires a logged-in user.

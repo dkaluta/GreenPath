@@ -114,6 +114,8 @@ before launch with `VITE_SHOW_DEMOS=false`; see
 3. [Google sign-in](docs/03-google-sign-in.markdown): "Sign in with Google"
 4. [Deploy](docs/04-deploy.markdown): put it on the internet
 5. [Adding a feature](docs/05-adding-a-feature.markdown): the pattern to copy
+6. [Shade routing](docs/06-shade-routing.markdown): the tree and shade data, and
+   how routes are found
 
 ## Design
 
