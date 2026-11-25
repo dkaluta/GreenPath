@@ -143,13 +143,13 @@ ignores the sun's position and building shadows for now. Both can come later:
 building shadows from OSM building heights for a few hours of the day
 (precomputed per hour), or ShadeMap on the map.
 
-**CHMv2 without a library.** The CHMv2 GeoTIFFs turned out to be simple: one
-file per zoom-10 Web Mercator tile (named by its quadkey; Givatayim is in
-`1221122233` and `1221122232`), 32768 × 32768 pixels of about 1.2 m, 8-bit
-heights in metres, 512 px tiles, Deflate, no predictor. The script reads the
-TIFF index and the 42 tiles it needs with HTTP range requests and inflates them
-with `node:zlib`, so the approved `geotiff` dependency was not needed (and the
-npm registry was unreachable from the build machine anyway).
+**Reading CHMv2.** There is one Cloud-Optimised GeoTIFF per zoom-10 Web Mercator
+tile, named by its quadkey (Givatayim is in `1221122233` and `1221122232`):
+32768 × 32768 pixels of about 1.2 m, 8-bit heights in metres. The script uses
+`geotiff` (a dev dependency, never shipped to the browser or Workers) to read
+only the window over the pilot area with HTTP range requests, checks each tile's
+origin against its quadkey so the pixels line up, and caches the window in
+`scripts/pilot/.cache/chm/`.
 
 ### The router
 
@@ -219,8 +219,8 @@ npm registry was unreachable from the build machine anyway).
    Workers, instead of a routing server or a hosted API.
 2. **The 1.6 GB יע"ד CSV** is downloaded once into the git-ignored cache; only
    the pilot rows are committed.
-3. **CHMv2 is used** in the build script. The `geotiff` dev dependency was
-   approved but turned out to be unnecessary (see above).
+3. **CHMv2 is used** in the build script, read with the `geotiff` dev
+   dependency.
 4. **No keys and no paid services.** ShadeMap is left for later; it would need a
    paid key for the real domain.
 5. **A `trees` table migration** in Supabase.

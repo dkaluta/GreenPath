@@ -28,7 +28,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
-import { inflateSync } from "node:zlib";
+import { fromUrl } from "geotiff";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -301,16 +301,15 @@ async function loadTrees(): Promise<Tree[]> {
 // --- 3. Canopy height from CHMv2 ----------------------------------------------
 
 /*
- * CHMv2 is stored as one GeoTIFF per zoom-10 Web Mercator tile (named by its
- * quadkey): 32768 x 32768 pixels of about 1.2 m, 8-bit heights in metres,
- * in 512 px Deflate-compressed tiles. That is simple enough to read with
- * node:zlib, without a GeoTIFF library.
+ * CHMv2 is stored as one Cloud-Optimised GeoTIFF per zoom-10 Web Mercator tile
+ * (named by its quadkey): 32768 x 32768 pixels of about 1.2 m, 8-bit heights
+ * in metres. geotiff.js reads just the window we need with HTTP range
+ * requests; the window is then cached in .cache/chm/ for offline reruns.
  */
 
 const EARTH = 20037508.342789244;
 const CHM_ZOOM = 10;
 const CHM_SIZE = 32768;
-const CHM_BLOCK = 512;
 
 function toMercator(lng: number, lat: number): [number, number] {
   const x = (lng * EARTH) / 180;
@@ -336,80 +335,6 @@ function quadkey(tx: number, ty: number, zoom: number) {
     key += String((tx & mask ? 1 : 0) + (ty & mask ? 2 : 0));
   }
   return key;
-}
-
-async function fetchRange(url: string, start: number, length: number) {
-  const cacheFile = join(
-    CACHE,
-    "chm",
-    `${url.split("/").pop()}-${start}-${length}.bin`,
-  );
-  if (existsSync(cacheFile)) return await readFile(cacheFile);
-  for (let attempt = 0; ; attempt++) {
-    const response = await fetch(url, {
-      headers: { Range: `bytes=${start}-${start + length - 1}` },
-    });
-    if (response.status === 206 || response.status === 200) {
-      const buffer = Buffer.from(await response.arrayBuffer());
-      mkdirSync(dirname(cacheFile), { recursive: true });
-      await writeFile(cacheFile, buffer);
-      return buffer;
-    }
-    if (attempt >= 3) throw new Error(`${url}: HTTP ${response.status}`);
-    await sleep(2000 * (attempt + 1));
-  }
-}
-
-type TiffIndex = { offsets: number[]; counts: number[]; across: number };
-
-async function readTiffIndex(url: string): Promise<TiffIndex> {
-  const head = await fetchRange(url, 0, 1 << 16);
-  if (head.toString("latin1", 0, 2) !== "II")
-    throw new Error("Expected a little-endian TIFF");
-  const ifd = head.readUInt32LE(4);
-  const entries = head.readUInt16LE(ifd);
-  const tags = new Map<
-    number,
-    { type: number; count: number; value: number }
-  >();
-  for (let i = 0; i < entries; i++) {
-    const at = ifd + 2 + i * 12;
-    const type = head.readUInt16LE(at + 2);
-    const count = head.readUInt32LE(at + 4);
-    const value =
-      type === 3 && count === 1
-        ? head.readUInt16LE(at + 8)
-        : head.readUInt32LE(at + 8);
-    tags.set(head.readUInt16LE(at), { type, count, value });
-  }
-  const width = tags.get(256)!.value;
-  const block = tags.get(322)!.value;
-  const compression = tags.get(259)!.value;
-  const bits = tags.get(258)!.value;
-  if (
-    width !== CHM_SIZE ||
-    block !== CHM_BLOCK ||
-    compression !== 8 ||
-    bits !== 8
-  ) {
-    throw new Error(`Unexpected CHMv2 layout in ${url}`);
-  }
-  if (tags.get(317)?.value && tags.get(317)!.value !== 1) {
-    throw new Error("CHMv2 uses a predictor this reader does not handle");
-  }
-  const offsetsTag = tags.get(324)!;
-  const countsTag = tags.get(325)!;
-  const readLongs = async (tag: { count: number; value: number }) => {
-    const buffer = await fetchRange(url, tag.value, tag.count * 4);
-    return Array.from({ length: tag.count }, (_, i) =>
-      buffer.readUInt32LE(i * 4),
-    );
-  };
-  return {
-    offsets: await readLongs(offsetsTag),
-    counts: await readLongs(countsTag),
-    across: CHM_SIZE / CHM_BLOCK,
-  };
 }
 
 /** A canopy-height grid covering AREA, at CHMv2's ~1.2 m pixels. */
@@ -443,41 +368,66 @@ async function loadCanopy(): Promise<CanopyGrid> {
   const [minX, minY] = toChmPixel(AREA.minLng, AREA.maxLat).map(Math.floor);
   const [maxX, maxY] = toChmPixel(AREA.maxLng, AREA.minLat).map(Math.ceil);
   const grid = new CanopyGrid(minX, minY, maxX - minX, maxY - minY);
-  const indexes = new Map<string, TiffIndex>();
+  const tileM = (2 * EARTH) / 2 ** CHM_ZOOM;
 
-  const firstBlockX = Math.floor(minX / CHM_BLOCK);
-  const firstBlockY = Math.floor(minY / CHM_BLOCK);
-  const lastBlockX = Math.floor((maxX - 1) / CHM_BLOCK);
-  const lastBlockY = Math.floor((maxY - 1) / CHM_BLOCK);
-  console.log(
-    `Reading CHMv2: ${(lastBlockX - firstBlockX + 1) * (lastBlockY - firstBlockY + 1)} blocks...`,
-  );
-  for (let by = firstBlockY; by <= lastBlockY; by++) {
-    for (let bx = firstBlockX; bx <= lastBlockX; bx++) {
-      const gx = bx * CHM_BLOCK;
-      const gy = by * CHM_BLOCK;
-      const tileX = Math.floor(gx / CHM_SIZE);
-      const tileY = Math.floor(gy / CHM_SIZE);
-      const url = `${CHM_BASE}/${quadkey(tileX, tileY, CHM_ZOOM)}.tif`;
-      let index = indexes.get(url);
-      if (!index) {
-        index = await readTiffIndex(url);
-        indexes.set(url, index);
-      }
-      const localBx = (gx - tileX * CHM_SIZE) / CHM_BLOCK;
-      const localBy = (gy - tileY * CHM_SIZE) / CHM_BLOCK;
-      const i = localBy * index.across + localBx;
-      if (!index.counts[i]) continue; // an empty block, all zero
-      const pixels = inflateSync(
-        await fetchRange(url, index.offsets[i], index.counts[i]),
+  for (
+    let ty = Math.floor(minY / CHM_SIZE);
+    ty <= Math.floor((maxY - 1) / CHM_SIZE);
+    ty++
+  ) {
+    for (
+      let tx = Math.floor(minX / CHM_SIZE);
+      tx <= Math.floor((maxX - 1) / CHM_SIZE);
+      tx++
+    ) {
+      const key = quadkey(tx, ty, CHM_ZOOM);
+      // The part of this tile inside AREA, in the tile's own pixels.
+      const left = Math.max(minX, tx * CHM_SIZE) - tx * CHM_SIZE;
+      const top = Math.max(minY, ty * CHM_SIZE) - ty * CHM_SIZE;
+      const right = Math.min(maxX, (tx + 1) * CHM_SIZE) - tx * CHM_SIZE;
+      const bottom = Math.min(maxY, (ty + 1) * CHM_SIZE) - ty * CHM_SIZE;
+      const width = right - left;
+      const cacheFile = join(
+        CACHE,
+        "chm",
+        `${key}-${left}-${top}-${right}-${bottom}.bin`,
       );
-      for (let row = 0; row < CHM_BLOCK; row++) {
-        const y = gy + row - grid.y0;
-        if (y < 0 || y >= grid.height) continue;
-        for (let col = 0; col < CHM_BLOCK; col++) {
-          const x = gx + col - grid.x0;
-          if (x < 0 || x >= grid.width) continue;
-          grid.data[y * grid.width + x] = pixels[row * CHM_BLOCK + col];
+
+      let pixels: Uint8Array;
+      if (existsSync(cacheFile)) {
+        pixels = new Uint8Array(await readFile(cacheFile));
+      } else {
+        console.log(
+          `Reading CHMv2 tile ${key} (${width} x ${bottom - top} px)...`,
+        );
+        const tiff = await fromUrl(`${CHM_BASE}/${key}.tif`);
+        const image = await tiff.getImage();
+        // Check the tile is where its quadkey says, so pixels line up.
+        const [originX, originY] = image.getOrigin();
+        const expectX = tx * tileM - EARTH;
+        const expectY = EARTH - ty * tileM;
+        if (
+          image.getWidth() !== CHM_SIZE ||
+          Math.abs(originX - expectX) > 1 ||
+          Math.abs(originY - expectY) > 1
+        ) {
+          throw new Error(`CHMv2 tile ${key} is not laid out as expected`);
+        }
+        const raster = await image.readRasters({
+          window: [left, top, right, bottom],
+          samples: [0],
+          interleave: true,
+        });
+        pixels = new Uint8Array(raster as unknown as ArrayLike<number>);
+        mkdirSync(dirname(cacheFile), { recursive: true });
+        await writeFile(cacheFile, pixels);
+      }
+
+      for (let row = 0; row < bottom - top; row++) {
+        const y = ty * CHM_SIZE + top + row - grid.y0;
+        for (let col = 0; col < width; col++) {
+          const x = tx * CHM_SIZE + left + col - grid.x0;
+          grid.data[y * grid.width + x] = pixels[row * width + col];
         }
       }
     }
