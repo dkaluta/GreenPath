@@ -3,10 +3,14 @@ import type { ApiError } from "@shared/index";
 import type { AppEnv } from "./env";
 import { fail } from "./lib/errors";
 import { requireAuth } from "./middleware/auth";
+import { collection } from "./routes/collection";
 import { events } from "./routes/events";
 import { health } from "./routes/health";
 import { me } from "./routes/me";
+import { reports } from "./routes/reports";
 import { uploads } from "./routes/uploads";
+import { verifications } from "./routes/verifications";
+import { walks } from "./routes/walks";
 
 /**
  * This is the server. It runs on Cloudflare Workers, NOT in the browser.
@@ -32,6 +36,10 @@ app.use("/api/*", requireAuth);
 app.route("/api/me", me);
 app.route("/api/events", events);
 app.route("/api/uploads", uploads);
+app.route("/api/reports", reports);
+app.route("/api/verifications", verifications);
+app.route("/api/walks", walks);
+app.route("/api/collection", collection);
 
 // Any /api/* URL we did not define above. Without this, an unknown API URL
 // would fall through and return the HTML page, which is very confusing to debug.
