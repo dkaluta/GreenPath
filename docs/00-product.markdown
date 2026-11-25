@@ -82,11 +82,15 @@ These are decisions, not suggestions. Code that breaks one is a bug.
 
 ### Sign-in uses passkeys
 
-- The main way to sign in is a **passkey** (WebAuthn): no password and no email
-  needed to start.
-- The starter kit's email-and-password and Google sign-in are still wired up as
-  scaffolding. They come out once passkeys work.
-- Not built yet. See "Open decisions" below.
+- The way to sign in is a **passkey** (WebAuthn), through Supabase Auth's
+  passkey support. No password.
+- Signing up asks for an email, a link (or code) sent to it, then a passkey.
+  Signing in is the email and then the passkey. An account can have a passkey on
+  each device. The email is used **only** for those links and codes: to sign up
+  and to recover the account (a lost passkey, a new device). It is never shown,
+  never stored outside Supabase Auth, and never returned by the API.
+- The starter kit's email-and-password and Google sign-in are removed.
+- How it is built and set up: [3. Passkey sign-in](03-passkeys.markdown).
 
 ### Turn-by-turn navigation is mobile only
 
@@ -194,12 +198,13 @@ mechanism is still being designed.
 
 ## Open decisions
 
-- **Passkey implementation.** Supabase Auth, a WebAuthn library on the Hono
-  server (for example `@simplewebauthn/server`, which runs on Workers), or a
-  hosted provider. Adding a library needs approval first; see the README.
+- None right now.
 
 ## Decided
 
+- **Passkey implementation** (November 2026): Supabase Auth passkeys
+  (experimental in supabase-js), with an emailed link or code to sign up and to
+  recover. See [3. Passkey sign-in](03-passkeys.markdown).
 - **Map library and tiles** (November 2026): **MapLibre GL JS** (`maplibre-gl`,
   BSD licence) with OpenStreetMap vector tiles from **OpenFreeMap**
   (`tiles.openfreemap.org`, free, no key, OpenMapTiles schema with Hebrew,

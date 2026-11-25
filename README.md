@@ -29,7 +29,8 @@ These come from the product doc and apply to every change:
   first, and every word on screen lives in `client/lib/i18n/strings.ts`.
 - **Pseudonymous.** People appear as three random English words, like
   `gentle shady olive`. Never show a real name or an email.
-- **Passkeys** are the way to sign in (still to be built).
+- **Passkeys** are the way to sign in. The email given at sign-up is only for
+  recovering the account.
 - **Turn-by-turn navigation is phone only**: mobile web now, React Native later.
   Desktop is for exploring and planning, laid out like Google Maps.
 - **The map looks like Apple Maps, in our colours**, light and dark.
@@ -111,7 +112,8 @@ before launch with `VITE_SHOW_DEMOS=false`; see
    its rules
 1. [Quickstart](docs/01-quickstart.markdown): get it running on your machine
 2. [Supabase setup](docs/02-supabase-setup.markdown): the database and login
-3. [Google sign-in](docs/03-google-sign-in.markdown): "Sign in with Google"
+3. [Passkey sign-in](docs/03-passkeys.markdown): passkeys, email links and
+   usernames
 4. [Deploy](docs/04-deploy.markdown): put it on the internet
 5. [Adding a feature](docs/05-adding-a-feature.markdown): the pattern to copy
 6. [Shade routing](docs/06-shade-routing.markdown): the tree and shade data, and

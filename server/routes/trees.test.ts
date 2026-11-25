@@ -79,7 +79,7 @@ const LEAVES = `${USER}/44444444-4444-4444-8444-444444444444.jpg`;
 
 const app = new Hono<AppEnv>()
   .use(async (c, next) => {
-    c.set("user", { id: USER, email: "walker@example.com" });
+    c.set("user", { id: USER });
     await next();
   })
   .route("/api/reports", reports)
