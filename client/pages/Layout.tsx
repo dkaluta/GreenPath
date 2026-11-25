@@ -1,11 +1,17 @@
 import { Suspense } from "react";
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { Spinner } from "../components";
 import { useAuth } from "../lib/auth";
 import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
 import { LANG } from "../lib/config";
 import { LANGUAGES, setLanguage, t, type Lang } from "../lib/i18n";
 import styles from "./Layout.module.css";
+
+/**
+ * Screens that are a full-screen map, without the header and footer. Add a
+ * map screen's path here (for example "/route" once it shows a map).
+ */
+const FULL_BLEED_PATHS = ["/"];
 
 /**
  * The frame around every page: the bar at the top, the footer at the
@@ -17,10 +23,27 @@ import styles from "./Layout.module.css";
  * <Outlet /> is. Pages that fill the whole screen on their own (like sign
  * in) are simply not nested inside it.
  *
+ * Map screens listed in FULL_BLEED_PATHS skip the header and footer and
+ * get the whole screen instead.
+ *
  * React Router calls this a "layout route":
  * https://reactrouter.com/start/declarative/routing#layout-routes
  */
 export function Layout() {
+  const { pathname } = useLocation();
+
+  // Map screens fill the whole screen and bring their own controls (the
+  // language and sign-in live in the home screen's menu).
+  if (FULL_BLEED_PATHS.includes(pathname)) {
+    return (
+      <div className={styles.fullBleed}>
+        <Suspense fallback={<Spinner />}>
+          <Outlet />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.shell}>
       <header className={styles.header}>

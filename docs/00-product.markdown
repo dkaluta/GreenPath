@@ -151,12 +151,15 @@ re-coloured with our palette:
 | Streets       | white                    | `#4A5A5E`            |
 | Shaded street | leaf green, thick        | leaf green, thick    |
 | Labels        | `--color-text` brown     | `#F5F5F5`            |
-| Your location | `--color-accent` dot     | same                 |
+| Your location | `--color-accent` dot     | `--color-sun` dot    |
 
 The values are the `--map-*` tokens in `client/styles/tokens.css`. The map style
-(once a map library is chosen) reads them, so the map and the UI stay in the
-same palette. Points of interest stay few: trees, parks, water fountains and
-benches come before shops.
+(`client/features/map/style.ts`) reads them while the app runs and rebuilds
+itself when the system switches between light and dark, so the map and the UI
+stay in the same palette. Labels are in the app's language where OpenStreetMap
+has the name in it (`name:he`, `name:ar`, `name:en`), else the local name.
+Points of interest stay few: trees, parks, water fountains and benches come
+before shops.
 
 ## Graphic language
 
@@ -194,6 +197,17 @@ mechanism is still being designed.
 - **Passkey implementation.** Supabase Auth, a WebAuthn library on the Hono
   server (for example `@simplewebauthn/server`, which runs on Workers), or a
   hosted provider. Adding a library needs approval first; see the README.
-- **Map library and tiles** for the home and navigation screens. A vector map
-  (for example MapLibre GL with OpenStreetMap tiles) is what makes the custom
-  Apple Maps-like style possible; raster tiles cannot be re-coloured.
+
+## Decided
+
+- **Map library and tiles** (November 2026): **MapLibre GL JS** (`maplibre-gl`,
+  BSD licence) with OpenStreetMap vector tiles from **OpenFreeMap**
+  (`tiles.openfreemap.org`, free, no key, OpenMapTiles schema with Hebrew,
+  Arabic and English names and glyphs). The style is built in code from the
+  `--map-*` tokens, so it is fully custom. Hebrew and Arabic labels use
+  MapLibre's right-to-left text plugin, loaded from unpkg the first time one is
+  drawn. The map component is `client/features/map/` (`<MapView />`); its
+  overlay API for routes and markers is described in its `index.ts`.
+- **Routing engine** (November 2026): our own small A* router on Workers over a
+  precomputed, shade-scored street graph of the pilot city. See
+  [6. Shade routing](06-shade-routing.markdown).

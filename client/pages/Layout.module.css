@@ -103,3 +103,10 @@
 .header a:focus-visible {
   outline-color: var(--color-header-text);
 }
+
+/* Map screens: the page is the whole screen, and does not scroll. */
+.fullBleed {
+  position: relative;
+  block-size: 100dvh;
+  overflow: hidden;
+}
