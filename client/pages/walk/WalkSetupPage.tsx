@@ -2,6 +2,7 @@ import { WALK_LIMITS, type WalkUnit } from "@shared/schemas/route";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../components";
+import { MapScreen } from "../../features/map";
 import { formatWalkValue } from "../../features/routes/format";
 import styles from "../../features/routes/screen.module.css";
 import { t } from "../../lib/i18n";
@@ -10,7 +11,8 @@ const UNITS: WalkUnit[] = ["minutes", "meters", "steps"];
 
 /**
  * Screen 2, free walk setup (wireframe 100:74): choose how long to walk, in
- * time, distance or steps, then find shaded loops on /route.
+ * time, distance or steps, then find shaded loops on /route. A bottom
+ * sheet over the map on phones, the floating panel on desktop.
  */
 export default function WalkSetupPage() {
   const navigate = useNavigate();
@@ -31,66 +33,55 @@ export default function WalkSetupPage() {
     }));
 
   return (
-    <main className={styles.screen}>
-      <div className={styles.map}>
-        {/* TODO(map-shell): the shared map component, centred on the person. */}
-        <p className={styles.mapNote}>{t.walk.mapPlaceholder}</p>
+    <MapScreen title={t.screens.walk.title} back="/" expanded>
+      <fieldset className={styles.segmented}>
+        <legend className={styles.visuallyHidden}>{t.walk.unitGroup}</legend>
+        {UNITS.map((u) => (
+          <label key={u} className={styles.segment}>
+            <input
+              type="radio"
+              name="unit"
+              value={u}
+              checked={unit === u}
+              onChange={() => setUnit(u)}
+            />
+            {t.walk.units[u]}
+          </label>
+        ))}
+      </fieldset>
+
+      <div className={styles.counter}>
+        <button
+          type="button"
+          className={styles.step}
+          aria-label={t.walk.decrease}
+          disabled={value <= limits.min}
+          onClick={() => change(-limits.step)}
+        >
+          −
+        </button>
+        <output className={styles.value} aria-live="polite">
+          <span className={styles.number}>{shown.number}</span>
+          <span className={styles.unit}>{shown.unit}</span>
+        </output>
+        <button
+          type="button"
+          className={styles.step}
+          aria-label={t.walk.increase}
+          disabled={value >= limits.max}
+          onClick={() => change(limits.step)}
+        >
+          +
+        </button>
       </div>
 
-      <section className={styles.sheet} aria-labelledby="walk-title">
-        <h1 id="walk-title" className={styles.title}>
-          {t.screens.walk.title}
-        </h1>
-
-        <fieldset className={styles.segmented}>
-          <legend className={styles.visuallyHidden}>{t.walk.unitGroup}</legend>
-          {UNITS.map((u) => (
-            <label key={u} className={styles.segment}>
-              <input
-                type="radio"
-                name="unit"
-                value={u}
-                checked={unit === u}
-                onChange={() => setUnit(u)}
-              />
-              {t.walk.units[u]}
-            </label>
-          ))}
-        </fieldset>
-
-        <div className={styles.counter}>
-          <button
-            type="button"
-            className={styles.step}
-            aria-label={t.walk.decrease}
-            disabled={value <= limits.min}
-            onClick={() => change(-limits.step)}
-          >
-            −
-          </button>
-          <output className={styles.value} aria-live="polite">
-            <span className={styles.number}>{shown.number}</span>
-            <span className={styles.unit}>{shown.unit}</span>
-          </output>
-          <button
-            type="button"
-            className={styles.step}
-            aria-label={t.walk.increase}
-            disabled={value >= limits.max}
-            onClick={() => change(limits.step)}
-          >
-            +
-          </button>
-        </div>
-
-        <Button
-          size="lg"
-          className={styles.primary}
-          onClick={() => navigate(`/route?walk=${unit}:${value}`)}
-        >
-          {t.walk.findRoute}
-        </Button>
-      </section>
-    </main>
+      <Button
+        size="lg"
+        className={styles.primary}
+        onClick={() => navigate(`/route?walk=${unit}:${value}`)}
+      >
+        {t.walk.findRoute}
+      </Button>
+    </MapScreen>
   );
 }

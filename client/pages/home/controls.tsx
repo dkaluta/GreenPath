@@ -1,16 +1,14 @@
-import type { ComponentProps, ReactElement, Ref } from "react";
-import { useNavigate } from "react-router";
-import { Menu } from "../../components";
+import type { Ref } from "react";
 import type { MapFilter, MapFilters } from "../../features/map";
 import { CheckIcon, SearchIcon } from "../../features/map/icons";
-import { useAuth } from "../../lib/auth";
-import { LANG } from "../../lib/config";
 import { cx } from "../../lib/cx";
-import { LANGUAGES, setLanguage, t, type Lang } from "../../lib/i18n";
+import { t } from "../../lib/i18n";
 import styles from "./HomePage.module.css";
 
 /*
- * The floating controls the phone and desktop home layouts share.
+ * The floating controls the phone and desktop home layouts share. The ones
+ * every map screen shares (the rail, the app menu, the round map buttons)
+ * are in client/features/map/chrome.tsx.
  */
 
 export type WalkMode = "destination" | "walk";
@@ -123,26 +121,6 @@ export function FilterChips({
   );
 }
 
-/** A round floating button over the map. */
-export function MapButton({
-  label,
-  className,
-  children,
-  ...props
-}: ComponentProps<"button"> & { label: string }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      className={cx(styles.mapButton, className)}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
-
 /** The shaded-street key: a leaf-green line and its name. */
 export function Legend({ className }: { className?: string }) {
   return (
@@ -150,54 +128,6 @@ export function Legend({ className }: { className?: string }) {
       <span className={styles.legendLine} aria-hidden="true" />
       {t.map.legendShade}
     </p>
-  );
-}
-
-/**
- * The menu behind the profile button (phone) and the menu button (desktop):
- * the collection, the language and signing in or out. The map screens have
- * no header, so this is where those live.
- */
-export function AppMenu({ trigger }: { trigger: ReactElement }) {
-  const navigate = useNavigate();
-  const { user, loading, signOut } = useAuth();
-
-  return (
-    <Menu trigger={trigger}>
-      <Menu.Item onClick={() => navigate("/collection")}>
-        {t.nav.collection}
-      </Menu.Item>
-      <Menu.Separator />
-      {(Object.keys(LANGUAGES) as Lang[]).map((lang) => (
-        <Menu.Item
-          key={lang}
-          lang={lang}
-          dir={LANGUAGES[lang].dir}
-          onClick={() => {
-            if (lang !== LANG) setLanguage(lang);
-          }}
-        >
-          <span className={styles.menuCheck}>
-            {lang === LANG ? <CheckIcon size={16} /> : null}
-          </span>
-          {LANGUAGES[lang].name}
-        </Menu.Item>
-      ))}
-      {loading ? null : (
-        <>
-          <Menu.Separator />
-          {user ? (
-            <Menu.Item onClick={() => void signOut()}>
-              {t.nav.signOut}
-            </Menu.Item>
-          ) : (
-            <Menu.Item onClick={() => navigate("/signin")}>
-              {t.nav.signIn}
-            </Menu.Item>
-          )}
-        </>
-      )}
-    </Menu>
   );
 }
 

@@ -1,49 +1,44 @@
 import { Suspense } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { Spinner } from "../components";
+import { AppMenu, MapButton } from "../features/map";
+import { MenuIcon } from "../features/map/icons";
 import { useAuth } from "../lib/auth";
 import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
-import { LANG } from "../lib/config";
-import { LANGUAGES, setLanguage, t, type Lang } from "../lib/i18n";
+import { t } from "../lib/i18n";
 import styles from "./Layout.module.css";
 
 /**
- * Screens that are a full-screen map, without the header and footer. Add a
- * map screen's path here (for example "/route" once it shows a map).
- */
-const FULL_BLEED_PATHS = ["/"];
-
-/**
- * The frame around every page: the bar at the top, the footer at the
- * bottom, and the current page in between. Change the links and the footer
- * freely - this is your app's, not part of the design system.
+ * The GreenPath screens: each fills the whole screen with the map and brings
+ * its own frame (the home screen, or <MapScreen> from client/features/map/),
+ * so this only gives them the screen and a spinner while one downloads.
  *
- * Applied in client/App.tsx. Pages nested inside
- * <Route element={<Layout />}> get this header and footer, drawn where
- * <Outlet /> is. Pages that fill the whole screen on their own (like sign
- * in) are simply not nested inside it.
- *
- * Map screens listed in FULL_BLEED_PATHS skip the header and footer and
- * get the whole screen instead.
- *
- * React Router calls this a "layout route":
+ * Applied in client/App.tsx, as a React Router "layout route":
  * https://reactrouter.com/start/declarative/routing#layout-routes
  */
+export function MapLayout() {
+  return (
+    <div className={styles.fullBleed}>
+      <Suspense
+        fallback={
+          <div className={styles.loading}>
+            <Spinner />
+          </div>
+        }
+      >
+        <Outlet />
+      </Suspense>
+    </div>
+  );
+}
+
+/**
+ * The frame around the starter kit's own pages (the demos, the component
+ * gallery, events): a floating bar at the top in the map screens' style,
+ * the footer at the bottom, and the page in between. The bar's menu is the
+ * same app menu as on the map (theme, language, signing in or out).
+ */
 export function Layout() {
-  const { pathname } = useLocation();
-
-  // Map screens fill the whole screen and bring their own controls (the
-  // language and sign-in live in the home screen's menu).
-  if (FULL_BLEED_PATHS.includes(pathname)) {
-    return (
-      <div className={styles.fullBleed}>
-        <Suspense fallback={<Spinner />}>
-          <Outlet />
-        </Suspense>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
@@ -57,7 +52,13 @@ export function Layout() {
             GitHub
           </a>
           {SHOW_DEMOS ? <Link to="/demos">Demos</Link> : null}
-          <LanguageSwitcher />
+          <AppMenu
+            trigger={
+              <MapButton label={t.home.menu} className={styles.menu}>
+                <MenuIcon />
+              </MapButton>
+            }
+          />
         </nav>
       </header>
 
@@ -121,31 +122,5 @@ function AuthAction() {
         {t.nav.signOut}
       </button>
     </>
-  );
-}
-
-/**
- * One button per language, each written in its own language so anyone can
- * find theirs. Choosing one reloads the app in it.
- */
-function LanguageSwitcher() {
-  return (
-    <div className={styles.languages} role="group" aria-label={t.language}>
-      {(Object.keys(LANGUAGES) as Lang[]).map((lang) => (
-        <button
-          key={lang}
-          type="button"
-          lang={lang}
-          dir={LANGUAGES[lang].dir}
-          className={styles.language}
-          aria-pressed={lang === LANG}
-          onClick={() => {
-            if (lang !== LANG) setLanguage(lang);
-          }}
-        >
-          {LANGUAGES[lang].name}
-        </button>
-      ))}
-    </div>
   );
 }

@@ -1,6 +1,10 @@
 /*
  * The map, for every screen that shows one.
  *
+ * A screen that opens over the map (a panel on desktop, a bottom sheet or
+ * page on phones, in the home screen's frame) is a <MapScreen>; see
+ * MapScreen.tsx. The rail, app menu and floating buttons are in chrome.tsx.
+ *
  *     import { MapView, useUserLocation } from "@/features/map";
  *
  * Drawing on it (for example a route from the routing API):
@@ -21,11 +25,22 @@
  *     fitTo keep the subject visible. Logical sides: start and end.
  *
  * Colours come from the --map-* tokens in client/styles/tokens.css, and
- * the style (style.ts) follows the system dark mode by itself. Pass plain
+ * the style (style.ts) follows the app's light or dark theme
+ * (client/lib/theme.ts) by itself. Pass plain
  * data: no colours, no MapLibre types.
  */
 
 export { BottomSheet, type BottomSheetProps } from "./BottomSheet";
+export {
+  AppMenu,
+  BackChevron,
+  MapButton,
+  MapControls,
+  Rail,
+  RailButton,
+} from "./chrome";
+export { useBack, useLocate } from "./hooks";
+export { MapScreen, type MapScreenProps } from "./MapScreen";
 export {
   ALL_FILTERS_ON,
   DEFAULT_CENTER,

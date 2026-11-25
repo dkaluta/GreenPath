@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Button, Popover, useToast } from "../../components";
+import { Button, Popover } from "../../components";
 import {
   ALL_FILTERS_ON,
+  AppMenu,
   BottomSheet,
+  MapButton,
+  MapControls,
   MapView,
-  useUserLocation,
+  Rail,
+  RailButton,
+  useLocate,
   type MapFilter,
   type MapFilters,
   type MapHandle,
@@ -13,19 +18,14 @@ import {
 import {
   ClockIcon,
   LayersIcon,
-  LeafIcon,
   LocateIcon,
-  MenuIcon,
-  MinusIcon,
-  PlusIcon,
   ProfileIcon,
 } from "../../features/map/icons";
 import { t } from "../../lib/i18n";
+import { DESKTOP_QUERY, useMediaQuery } from "../../lib/useMediaQuery";
 import {
-  AppMenu,
   FilterChips,
   Legend,
-  MapButton,
   ModeToggle,
   Recents,
   SearchBox,
@@ -33,7 +33,6 @@ import {
 } from "./controls";
 import styles from "./HomePage.module.css";
 import { addRecent, readRecents } from "./recents";
-import { DESKTOP_QUERY, useMediaQuery } from "./useMediaQuery";
 
 /**
  * Home: the map, full screen. Wireframe 100:36.
@@ -43,12 +42,12 @@ import { DESKTOP_QUERY, useMediaQuery } from "./useMediaQuery";
  * Desktop: laid out like Google Maps, with a rail on the start side, a
  * floating search panel, filter chips along the top and the map controls in
  * the bottom end corner. Both mirror between right-to-left and left-to-right
- * through logical CSS properties alone.
+ * through logical CSS properties alone. The other screens open in the same
+ * frame through <MapScreen> (client/features/map/MapScreen.tsx).
  */
 export default function HomePage() {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
-  const toast = useToast();
   const mapRef = useRef<MapHandle>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -60,35 +59,7 @@ export default function HomePage() {
   const [sheet, setSheet] = useState<"search" | "walk" | null>(null);
   const [sheetExpanded, setSheetExpanded] = useState(false);
 
-  const location = useUserLocation();
-  const flyWhenFound = useRef(false);
-
-  useEffect(() => {
-    if (location.position && flyWhenFound.current) {
-      flyWhenFound.current = false;
-      mapRef.current?.flyTo(location.position);
-    }
-  }, [location.position]);
-
-  useEffect(() => {
-    if (!location.error) return;
-    flyWhenFound.current = false;
-    toast.add({
-      title:
-        location.error === "denied"
-          ? t.map.locationDenied
-          : t.map.locationUnavailable,
-      type: "error",
-    });
-  }, [location.error, toast]);
-
-  const locate = () => {
-    if (location.position) mapRef.current?.flyTo(location.position);
-    else {
-      flyWhenFound.current = true;
-      location.start();
-    }
-  };
+  const { position, locate } = useLocate(mapRef);
 
   const search = (destination: string) => {
     setRecents(addRecent(destination));
@@ -125,7 +96,7 @@ export default function HomePage() {
     <MapView
       ref={mapRef}
       filters={filters}
-      userLocation={location.position}
+      userLocation={position}
       attribution={isDesktop ? "end" : "start"}
       insets={
         isDesktop
@@ -154,34 +125,16 @@ export default function HomePage() {
   if (isDesktop) {
     return (
       <div className={styles.desktop}>
-        <nav className={styles.rail} aria-label={t.home.menu}>
-          <AppMenu
-            trigger={
-              <button
-                type="button"
-                className={styles.railButton}
-                aria-label={t.home.menu}
-              >
-                <MenuIcon />
-              </button>
-            }
-          />
-          <Link to="/collection" className={styles.railButton}>
-            <LeafIcon />
-            <span>{t.nav.collection}</span>
-          </Link>
-          <button
-            type="button"
-            className={styles.railButton}
+        <Rail>
+          <RailButton
+            icon={<ClockIcon />}
+            label={t.home.recents}
             onClick={() => {
               setMode("destination");
               searchRef.current?.focus();
             }}
-          >
-            <ClockIcon />
-            <span>{t.home.recents}</span>
-          </button>
-        </nav>
+          />
+        </Rail>
 
         <div className={styles.stage}>
           {map}
@@ -202,40 +155,27 @@ export default function HomePage() {
 
           <Legend className={styles.desktopLegend} />
 
-          <div className={styles.controls}>
-            <Popover
-              side="inline-start"
-              title={t.map.filtersLabel}
-              trigger={
-                <MapButton label={t.map.layers}>
-                  <LayersIcon />
-                </MapButton>
-              }
-            >
-              <FilterChips
-                className={styles.chipsColumn}
-                filters={filters}
-                onToggle={toggleFilter}
-              />
-            </Popover>
-            <MapButton label={t.map.myLocation} onClick={locate}>
-              <LocateIcon />
-            </MapButton>
-            <div className={styles.zoom}>
-              <MapButton
-                label={t.map.zoomIn}
-                onClick={() => mapRef.current?.zoomIn()}
+          <MapControls
+            mapRef={mapRef}
+            onLocate={locate}
+            before={
+              <Popover
+                side="inline-start"
+                title={t.map.filtersLabel}
+                trigger={
+                  <MapButton label={t.map.layers}>
+                    <LayersIcon />
+                  </MapButton>
+                }
               >
-                <PlusIcon />
-              </MapButton>
-              <MapButton
-                label={t.map.zoomOut}
-                onClick={() => mapRef.current?.zoomOut()}
-              >
-                <MinusIcon />
-              </MapButton>
-            </div>
-          </div>
+                <FilterChips
+                  className={styles.chipsColumn}
+                  filters={filters}
+                  onToggle={toggleFilter}
+                />
+              </Popover>
+            }
+          />
         </div>
       </div>
     );

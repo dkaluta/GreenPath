@@ -1,4 +1,5 @@
-/* Header on top, footer at the bottom of the screen even on a short page. */
+/* === STARTER PAGES: floating bar, page, footer ========================== */
+
 .shell {
   display: flex;
   flex-direction: column;
@@ -9,18 +10,26 @@
   flex: 1;
 }
 
+/* A floating pill bar, like the search bar over the map. */
 .header {
+  position: sticky;
+  inset-block-start: var(--space-3);
+  z-index: var(--z-dropdown);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-8);
-  background-color: var(--color-header-bg);
+  margin: var(--space-3) var(--space-4) 0;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-6) var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-float);
 }
 
 .header a {
-  color: var(--color-header-text);
+  color: var(--color-text);
   text-decoration: none;
 }
 
@@ -30,46 +39,25 @@
 
 .appName {
   font-family: var(--font-titles);
-  font-size: var(--text-2xl);
-  font-weight: 500;
+  font-size: var(--text-xl);
+  font-weight: 700;
 }
 
 .nav {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-4);
 }
 
-.languages {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.language {
-  padding: var(--space-1) var(--space-3);
-  border: var(--border-width) solid transparent;
-  border-radius: var(--radius-pill);
-  background: none;
-  color: var(--color-header-text);
-  font: inherit;
-  cursor: pointer;
-}
-
-.language:hover {
-  border-color: var(--color-header-text);
-}
-
-.language[aria-pressed="true"] {
-  background-color: var(--color-header-text);
-  color: var(--color-header-bg);
-}
-
-.language:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-header-text);
-  outline-offset: var(--focus-ring-offset);
+.nav .menu {
+  box-shadow: none;
+  background-color: var(--color-bg);
 }
 
 .footer {
   padding: var(--space-4);
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
   text-align: center;
 }
@@ -99,14 +87,18 @@
   outline-offset: var(--focus-ring-offset);
 }
 
-/* The accent would vanish against the dark header bar. */
-.header a:focus-visible {
-  outline-color: var(--color-header-text);
-}
+/* === MAP SCREENS ======================================================== */
 
-/* Map screens: the page is the whole screen, and does not scroll. */
+/* The page is the whole screen, and does not scroll. */
 .fullBleed {
   position: relative;
   block-size: 100dvh;
   overflow: hidden;
+  background-color: var(--map-land);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
 }

@@ -1,56 +1,34 @@
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Spinner } from "../../components";
 import { useCollection } from "../../features/collection/hooks";
 import { CATALOGUE, speciesName } from "../../features/collection/species";
+import { MapScreen } from "../../features/map";
 import actions from "../../features/verifications/actions.module.css";
-import { BackIcon } from "../../features/verifications/icons";
 import { TreePicture } from "../../features/verifications/TreePicture";
 import { plural } from "../../features/walks/format";
-import { cx } from "../../lib/cx";
 import { t } from "../../lib/i18n";
 import styles from "./CollectionPage.module.css";
 
 /**
  * Wireframe 100:321, "האוסף שלי": the tree species the person has
  * confirmed, then a "not yet" slot for each common species still to find.
+ * A full page on phones; the floating panel over the map on desktop, like
+ * Google Maps' saved places. Back goes where the person came from.
  */
 export default function CollectionPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const collection = useCollection();
-
-  // Back where they came from, or the map if they opened this directly.
-  function back() {
-    if (location.key === "default") navigate("/");
-    else navigate(-1);
-  }
-
-  const header = (
-    <button
-      type="button"
-      className={cx(actions.round, styles.back)}
-      aria-label={t.collection.back}
-      onClick={back}
-    >
-      <BackIcon size={20} className={actions.flipInRtl} />
-    </button>
-  );
 
   if (collection.isPending) {
     return (
-      <main className={styles.page}>
-        {header}
-        <h1 className={styles.title}>{t.collection.title}</h1>
+      <MapScreen title={t.collection.title} phone="page">
         <Spinner />
-      </main>
+      </MapScreen>
     );
   }
 
   if (collection.isError) {
     return (
-      <main className={styles.page}>
-        {header}
-        <h1 className={styles.title}>{t.collection.title}</h1>
+      <MapScreen title={t.collection.title} phone="page">
         <p role="alert" className={actions.error}>
           {t.collection.failed}
         </p>
@@ -61,7 +39,7 @@ export default function CollectionPage() {
         >
           {t.collection.retry}
         </button>
-      </main>
+      </MapScreen>
     );
   }
 
@@ -77,9 +55,7 @@ export default function CollectionPage() {
   );
 
   return (
-    <main className={styles.page}>
-      {header}
-      <h1 className={styles.title}>{t.collection.title}</h1>
+    <MapScreen title={t.collection.title} phone="page">
       <p className={styles.subtitle}>
         {species.length
           ? `${plural(t.collection.speciesCount, species.length)} · ${plural(
@@ -116,6 +92,6 @@ export default function CollectionPage() {
           {t.actions.backToMap}
         </Link>
       ) : null}
-    </main>
+    </MapScreen>
   );
 }

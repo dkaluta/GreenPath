@@ -6,7 +6,7 @@ import { Spinner, ToastProvider, TooltipProvider } from "./components";
 import { AuthProvider, RequireAuth } from "./lib/auth";
 import { DIRECTION, SHOW_DEMOS } from "./lib/config";
 import { RequireMobile } from "./lib/RequireMobile";
-import { Layout } from "./pages/Layout";
+import { Layout, MapLayout } from "./pages/Layout";
 
 // One line per page. Each page is downloaded the first time someone visits
 // it, so adding pages never slows down the rest of the app.
@@ -65,7 +65,7 @@ export function App() {
             <BrowserRouter>
               <AuthProvider>
                 {/* Shows a spinner while a page downloads. Pages inside
-                <Layout> get their own, so the header stays put. */}
+                <Layout> or <MapLayout> get their own. */}
                 <Suspense
                   fallback={
                     <main>
@@ -74,18 +74,17 @@ export function App() {
                   }
                 >
                   <Routes>
-                    {/* Full-screen pages, without the header and footer. */}
-                    <Route path="/signin" element={<SignInPage />} />
                     <Route
                       path="/auth/callback"
                       element={<AuthCallbackPage />}
                     />
 
-                    {/* Everything in here gets the header and footer from
-                    client/pages/Layout.tsx. */}
-                    <Route element={<Layout />}>
+                    {/* The GreenPath screens: the map fills the screen, and
+                    each screen is a panel (desktop) or sheet (phone) over
+                    it. See client/features/map/MapScreen.tsx. */}
+                    <Route element={<MapLayout />}>
                       <Route path="/" element={<HomePage />} />
-                      <Route path="/design" element={<DesignPage />} />
+                      <Route path="/signin" element={<SignInPage />} />
                       <Route path="/walk" element={<WalkSetupPage />} />
                       <Route path="/route" element={<RouteChoicePage />} />
                       <Route path="/summary" element={<SummaryPage />} />
@@ -105,12 +104,23 @@ export function App() {
                         <Route path="/navigate/match" element={<MatchPage />} />
                       </Route>
 
-                      {/* Everything in here needs a login. */}
                       <Route element={<RequireAuth />}>
                         <Route
                           path="/collection"
                           element={<CollectionPage />}
                         />
+                      </Route>
+
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Route>
+
+                    {/* The starter kit's own pages get the header and footer
+                    from client/pages/Layout.tsx. */}
+                    <Route element={<Layout />}>
+                      <Route path="/design" element={<DesignPage />} />
+
+                      {/* Everything in here needs a login. */}
+                      <Route element={<RequireAuth />}>
                         <Route path="/events" element={<EventsPage />} />
                         <Route path="/events/new" element={<EventNewPage />} />
                         <Route
@@ -144,8 +154,6 @@ export function App() {
                           <Route path="/demos/viz" element={<VizDemoPage />} />
                         </>
                       ) : null}
-
-                      <Route path="*" element={<NotFoundPage />} />
                     </Route>
                   </Routes>
                 </Suspense>

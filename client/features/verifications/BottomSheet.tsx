@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { cx } from "../../lib/cx";
+import { MapView } from "../map";
 import styles from "./BottomSheet.module.css";
 
 /**
@@ -7,7 +8,8 @@ import styles from "./BottomSheet.module.css";
  * the map. Escape and a tap on the dimmed map call `onClose`.
  *
  * `variant="sheet"` touches the bottom edge (the report sheet);
- * `variant="card"` floats above it with a margin (the stop card).
+ * `variant="card"` floats above it with a margin (the stop card). The map
+ * is drawn behind it, slightly dimmed.
  */
 export function BottomSheet({
   title,
@@ -37,6 +39,8 @@ export function BottomSheet({
 
   return (
     <div className={styles.backdrop}>
+      {/* The map stays behind the sheet, as in the wireframes. */}
+      <MapView className={styles.map} />
       <button
         type="button"
         className={styles.scrim}

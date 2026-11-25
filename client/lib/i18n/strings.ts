@@ -14,11 +14,18 @@ const he = {
   appName: "המסלול הירוק",
   partners: "בשיתוף הסדנא לידע ציבורי ויער עירוני דיגיטלי",
   language: "שפה",
+  theme: {
+    label: "תצוגה",
+    system: "לפי המכשיר",
+    light: "בהיר",
+    dark: "כהה",
+  },
   nav: {
     map: "מפה",
     collection: "האוסף שלי",
     signIn: "כניסה",
     signOut: "יציאה",
+    back: "חזרה",
   },
   stub: {
     next: "המשך",
@@ -300,7 +307,6 @@ const he = {
     decrease: "פחות",
     increase: "יותר",
     findRoute: "מצאו לי מסלול",
-    mapPlaceholder: "המפה תופיע כאן",
   },
   route: {
     kinds: {
@@ -336,11 +342,18 @@ const ar: Strings = {
   appName: "المسار الأخضر",
   partners: "بالتعاون مع ورشة المعرفة العامة والغابة الحضرية الرقمية",
   language: "اللغة",
+  theme: {
+    label: "المظهر",
+    system: "حسب الجهاز",
+    light: "فاتح",
+    dark: "داكن",
+  },
   nav: {
     map: "الخريطة",
     collection: "مجموعتي",
     signIn: "تسجيل الدخول",
     signOut: "تسجيل الخروج",
+    back: "رجوع",
   },
   stub: {
     next: "التالي",
@@ -640,7 +653,6 @@ const ar: Strings = {
     decrease: "أقل",
     increase: "أكثر",
     findRoute: "ابحثوا لي عن مسار",
-    mapPlaceholder: "ستظهر الخريطة هنا",
   },
   route: {
     kinds: {
@@ -674,11 +686,18 @@ const en: Strings = {
   appName: "GreenPath",
   partners: "With the Public Knowledge Workshop and the Digital Urban Forest",
   language: "Language",
+  theme: {
+    label: "Appearance",
+    system: "Match device",
+    light: "Light",
+    dark: "Dark",
+  },
   nav: {
     map: "Map",
     collection: "My collection",
     signIn: "Sign in",
     signOut: "Sign out",
+    back: "Back",
   },
   stub: {
     next: "Next",
@@ -983,7 +1002,6 @@ const en: Strings = {
     decrease: "Less",
     increase: "More",
     findRoute: "Find me a route",
-    mapPlaceholder: "The map will appear here",
   },
   route: {
     kinds: {

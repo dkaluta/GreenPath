@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useToast } from "../../components";
+import { MapScreen } from "../../features/map";
 import {
   useCreateVerification,
   useUploadPhoto,
@@ -134,9 +135,9 @@ export default function CapturePage() {
 
   if (!loading && !user) {
     return (
-      <main>
+      <MapScreen title={t.screens.capture.title} back="/navigate/stop">
         <SignInPrompt />
-      </main>
+      </MapScreen>
     );
   }
 

@@ -1,3 +1,5 @@
+// First, so <html data-theme> is right before anything draws.
+import "./lib/theme";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

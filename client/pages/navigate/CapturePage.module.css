@@ -6,6 +6,8 @@
 .screen {
   --camera-bg: #1e1e1e;
   --camera-text: #ffffff;
+  /* The light theme's danger red: white text on it reads in either theme. */
+  --camera-danger: #c0362c;
   /* Dark glass, so labels stay readable over a bright sky. */
   --camera-chip: color-mix(in srgb, var(--camera-bg) 55%, transparent);
 
@@ -143,7 +145,7 @@
 .error {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
-  background-color: var(--color-danger);
+  background-color: var(--camera-danger);
   font-size: var(--text-sm);
   text-align: center;
 }

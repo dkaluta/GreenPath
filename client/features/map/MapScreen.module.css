@@ -1,0 +1,168 @@
+/*
+  A screen over the map (MapScreen.tsx). The same frame as the home screen
+  (client/pages/home/HomePage.module.css): logical properties only, so it
+  mirrors between right-to-left and left-to-right. The 56rem breakpoint is
+  DESKTOP_QUERY in client/lib/useMediaQuery.ts.
+*/
+
+/* === DESKTOP: rail, map, floating panel ================================= */
+
+.desktop {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  block-size: 100dvh;
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Like Google Maps' directions and place panels: floating, start side. */
+.panel {
+  position: absolute;
+  inset-block: var(--space-4);
+  inset-inline-start: var(--space-4);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  inline-size: 23.5rem;
+  max-inline-size: calc(100% - var(--space-8) - 4rem);
+  /* As tall as its content, never past the bottom of the map. */
+  block-size: fit-content;
+  max-block-size: calc(100% - var(--space-8));
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+.panelBack {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  margin-inline-start: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.panelBack:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.panelBack:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.panelTitle {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+/* === PHONE: map, floating buttons, bottom sheet ========================= */
+
+.phone {
+  position: relative;
+  block-size: 100dvh;
+  max-inline-size: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.phoneTop {
+  position: absolute;
+  inset-block-start: calc(env(safe-area-inset-top) + var(--space-4));
+  inset-inline: var(--space-4);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none; /* the gap between the buttons lets the map through */
+}
+
+.phoneTop > * {
+  pointer-events: auto;
+}
+
+:is(.phoneTop, .pageHeader) :is(.back, .profile) {
+  inline-size: 3rem;
+  block-size: 3rem;
+}
+
+/* The sheet's content, spaced like the desktop panel's. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* === PHONE: a full page ================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  block-size: 100dvh;
+  max-inline-size: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  background-color: var(--color-surface);
+}
+
+.pageHeader {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: calc(env(safe-area-inset-top) + var(--space-3)) var(--space-4) var(--space-3);
+  background-color: var(--color-surface);
+}
+
+.pageHeader .back,
+.pageHeader .profile {
+  box-shadow: none;
+  background-color: var(--color-bg);
+}
+
+.pageTitle {
+  flex: 1;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.pageBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-6));
+}

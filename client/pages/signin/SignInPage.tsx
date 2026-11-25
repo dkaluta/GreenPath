@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
-import { Button, Card, Field, Input, Spinner } from "../../components";
+import { Button, Field, Input, Spinner } from "../../components";
+import { MapScreen } from "../../features/map";
 import { useAuth } from "../../lib/auth";
 import { SUPABASE_ENABLED } from "../../lib/config";
 import { t } from "../../lib/i18n";
@@ -373,13 +374,14 @@ export default function SignInPage() {
   }
 }
 
+/**
+ * Every step in the app's map frame: the floating panel over the map on
+ * desktop, a full page on phones.
+ */
 function Frame({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main className={styles.page}>
-      <Card variant="raised" padding="lg" className={styles.card}>
-        <h1 className={styles.title}>{title}</h1>
-        {children}
-      </Card>
-    </main>
+    <MapScreen title={title} phone="page">
+      <div>{children}</div>
+    </MapScreen>
   );
 }

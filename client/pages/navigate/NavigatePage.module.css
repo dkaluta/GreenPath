@@ -1,0 +1,30 @@
+/* The navigation sheet: time and shade, then the ways on, as pills. */
+
+.numbers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.time {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.detail {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actions > a {
+  flex: 1;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  white-space: nowrap;
+}

@@ -6,15 +6,19 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  /* Stands in for the map until the navigation screen sits behind it. */
-  background-color: var(--map-land);
+  background-color: var(--map-land); /* until the map behind has drawn */
+}
+
+/* Its own layer, so the map's credit button stays under the sheet. */
+.map {
+  z-index: 0;
 }
 
 .scrim {
   position: absolute;
   inset: 0;
   border: 0;
-  background: none;
+  background-color: color-mix(in srgb, var(--color-overlay) 40%, transparent);
   cursor: default;
 }
 

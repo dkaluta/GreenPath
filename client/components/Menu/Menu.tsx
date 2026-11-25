@@ -70,5 +70,65 @@ function MenuSeparator({
   );
 }
 
+/**
+ * A set of choices where exactly one is on, such as a theme:
+ *
+ *     <Menu.Group label="Theme">
+ *       <Menu.RadioGroup value={theme} onValueChange={setTheme}>
+ *         <Menu.RadioItem value="light">Light</Menu.RadioItem>
+ *         <Menu.RadioItem value="dark">Dark</Menu.RadioItem>
+ *       </Menu.RadioGroup>
+ *     </Menu.Group>
+ *
+ * The chosen item shows a check at its start.
+ */
+function RadioGroup(props: ComponentProps<typeof BaseMenu.RadioGroup>) {
+  return <BaseMenu.RadioGroup {...props} />;
+}
+
+function RadioItem({
+  className,
+  children,
+  ...props
+}: PlainClassName<ComponentProps<typeof BaseMenu.RadioItem>>) {
+  return (
+    <BaseMenu.RadioItem className={cx(styles.item, className)} {...props}>
+      <span className={styles.indicator}>
+        <BaseMenu.RadioItemIndicator>
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        </BaseMenu.RadioItemIndicator>
+      </span>
+      {children}
+    </BaseMenu.RadioItem>
+  );
+}
+
+/** Items under a small heading. */
+function Group({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <BaseMenu.Group>
+      <BaseMenu.GroupLabel className={styles.groupLabel}>
+        {label}
+      </BaseMenu.GroupLabel>
+      {children}
+    </BaseMenu.Group>
+  );
+}
+
 Menu.Item = Item;
 Menu.Separator = MenuSeparator;
+Menu.Group = Group;
+Menu.RadioGroup = RadioGroup;
+Menu.RadioItem = RadioItem;

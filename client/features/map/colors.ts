@@ -58,6 +58,3 @@ export function readMapColors(
   }
   return colors;
 }
-
-/** The query the dark tokens in tokens.css hang off. */
-export const DARK_SCHEME_QUERY = "(prefers-color-scheme: dark)";

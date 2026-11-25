@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Spinner } from "../../components";
 import { speciesName } from "../../features/collection/species";
+import { MapScreen } from "../../features/map";
 import actions from "../../features/verifications/actions.module.css";
 import { CheckIcon, TreeIcon } from "../../features/verifications/icons";
 import { SignInPrompt } from "../../features/verifications/SignInPrompt";
@@ -31,7 +32,8 @@ type Shown = Pick<Walk, "distance_m" | "steps" | "shade_share"> & {
  *
  * Opening this screen ends the walk on the phone (features/walks/session)
  * and records it with POST /api/walks. Without a walk in progress it shows
- * the person's latest one.
+ * the person's latest one. A full page on phones, as in the wireframe; the
+ * floating panel over the map on desktop.
  */
 export default function SummaryPage() {
   const { user, loading } = useAuth();
@@ -61,21 +63,20 @@ export default function SummaryPage() {
 
   if (loading || (walks.isLoading && !shown)) {
     return (
-      <main className={styles.page}>
+      <MapScreen title={t.screens.summary.title} phone="page">
         <Spinner />
-      </main>
+      </MapScreen>
     );
   }
 
   if (!shown) {
     return (
-      <main className={styles.page}>
-        <h1 className={styles.title}>{t.screens.summary.title}</h1>
+      <MapScreen title={t.screens.summary.title} phone="page">
         <p className={styles.empty}>{t.summary.empty}</p>
         <Link to="/" className={actions.secondary}>
           {t.actions.backToMap}
         </Link>
-      </main>
+      </MapScreen>
     );
   }
 
@@ -85,11 +86,10 @@ export default function SummaryPage() {
   ];
 
   return (
-    <main className={styles.page}>
+    <MapScreen title={t.summary.title} phone="page">
       <div className={styles.check} aria-hidden="true">
         <CheckIcon size={32} />
       </div>
-      <h1 className={styles.title}>{t.summary.title}</h1>
 
       <dl className={styles.stats}>
         <div>
@@ -143,6 +143,6 @@ export default function SummaryPage() {
           {t.summary.toCollection}
         </Link>
       </div>
-    </main>
+    </MapScreen>
   );
 }
