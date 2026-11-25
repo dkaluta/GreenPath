@@ -81,6 +81,29 @@ same address with `http://` instead of `https://`.)
 **This is the step people forget, and it is the one that makes a working app
 return errors in production.**
 
+### The quick way: copy `.env` with one command
+
+GreenPath's Worker is named `app`, so its address is
+`https://app.greenpath.workers.dev`. If you are signed in to Wrangler
+(`npx wrangler login`) and the cf CLI (`cf auth login`) on your computer, run:
+
+```bash
+npm run secrets:push
+```
+
+It reads your `.env` and copies it to the right two places, without printing any
+value:
+
+- `SUPABASE_SECRET_KEY` and any other line without `VITE_` become the Worker's
+  **Secrets**.
+- The `VITE_` lines become the **Build variables** from the step above.
+
+Then push to `main`, or retry the latest build, so the next build uses the
+variables. Run it again whenever a value in `.env` changes. The steps below do
+the same by hand.
+
+### By hand
+
 The build variables above only exist while the app is being built - they are
 baked into the browser code. The server needs its own values while it is
 running, and there is exactly one you have to type:

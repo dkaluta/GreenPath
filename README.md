@@ -87,16 +87,17 @@ way to do each of these.
 
 ## Commands
 
-| Command             | What it does                                         |
-| ------------------- | ---------------------------------------------------- |
-| `npm run dev`       | Runs the app at http://localhost:3000, with reload   |
-| `npm run build`     | Builds the app into `dist/`                          |
-| `npm run preview`   | Builds, then serves the build. Use before pushing    |
-| `npm run deploy`    | Builds and deploys to Cloudflare                     |
-| `npm run typecheck` | Checks types, including that every language is whole |
-| `npm run lint`      | Looks for likely bugs and rule violations            |
-| `npm run format`    | Formats every file with Prettier                     |
-| `npm test`          | Runs the tests                                       |
+| Command                | What it does                                             |
+| ---------------------- | -------------------------------------------------------- |
+| `npm run dev`          | Runs the app at http://localhost:3000, with reload       |
+| `npm run build`        | Builds the app into `dist/`                              |
+| `npm run preview`      | Builds, then serves the build. Use before pushing        |
+| `npm run deploy`       | Builds and deploys to Cloudflare                         |
+| `npm run secrets:push` | Copies `.env` to Cloudflare: Secrets and build variables |
+| `npm run typecheck`    | Checks types, including that every language is whole     |
+| `npm run lint`         | Looks for likely bugs and rule violations                |
+| `npm run format`       | Formats every file with Prettier                         |
+| `npm test`             | Runs the tests                                           |
 
 ## Component gallery and demos
 

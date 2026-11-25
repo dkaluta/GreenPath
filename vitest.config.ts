@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 // Kept separate from vite.config.ts so the Cloudflare plugin does not run
 // during tests - the tests are plain functions and do not need a Worker.
@@ -11,5 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Other sessions' git worktrees live in .claude/; their tests are theirs.
+    exclude: [...configDefaults.exclude, ".claude/**"],
   },
 });
