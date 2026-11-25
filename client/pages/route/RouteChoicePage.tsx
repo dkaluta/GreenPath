@@ -16,7 +16,7 @@ import {
   formatTrees,
 } from "../../features/routes/format";
 import { useOrigin, useRoutes } from "../../features/routes/hooks";
-import { RouteSketch } from "../../features/routes/RouteSketch";
+import { RouteMap } from "../../features/routes/RouteMap";
 import styles from "../../features/routes/screen.module.css";
 import { ApiRequestError } from "../../lib/api";
 import { t } from "../../lib/i18n";
@@ -58,9 +58,13 @@ export default function RouteChoicePage() {
   return (
     <main className={styles.screen}>
       <div className={styles.map}>
-        {routes.length > 0 ? (
-          <RouteSketch routes={routes} selectedId={selected?.id} />
-        ) : null}
+        <RouteMap
+          routes={routes}
+          selectedId={selected?.id}
+          origin={origin?.point}
+          destination={to}
+          onSelect={setChosenId}
+        />
       </div>
 
       <section className={styles.sheet} aria-labelledby="route-title">

@@ -209,9 +209,6 @@ origin against its quadkey so the pixels line up, and caches the window in
   `CITY` and `AREA`); the bundle size sets how far it can go before moving the
   graph to KV or R2, or to a self-hosted GraphHopper with the same shade values.
 - Turn-by-turn instructions (the navigation screen is another piece of work).
-- Drawing routes on the real map. The route screen draws a simple SVG sketch
-  (`client/features/routes/RouteSketch.tsx`) until the shared map component
-  lands.
 
 ## Decisions (approved 25 November 2026)
 

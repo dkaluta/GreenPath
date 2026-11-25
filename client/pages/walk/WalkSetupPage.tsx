@@ -1,7 +1,12 @@
-import { WALK_LIMITS, type WalkUnit } from "@shared/schemas/route";
+import {
+  isInPilotArea,
+  WALK_LIMITS,
+  type WalkUnit,
+} from "@shared/schemas/route";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../components";
+import { DEFAULT_CENTER, MapView, useUserLocation } from "../../features/map";
 import { formatWalkValue } from "../../features/routes/format";
 import styles from "../../features/routes/screen.module.css";
 import { t } from "../../lib/i18n";
@@ -14,6 +19,14 @@ const UNITS: WalkUnit[] = ["minutes", "meters", "steps"];
  */
 export default function WalkSetupPage() {
   const navigate = useNavigate();
+  const location = useUserLocation();
+  // The walk starts here only inside the pilot city; elsewhere it starts in
+  // the middle of Givatayim (see useOrigin), so show that instead.
+  const here =
+    location.position &&
+    isInPilotArea({ lng: location.position[0], lat: location.position[1] })
+      ? location.position
+      : null;
   const [unit, setUnit] = useState<WalkUnit>("minutes");
   const [values, setValues] = useState<Record<WalkUnit, number>>({
     minutes: WALK_LIMITS.minutes.initial,
@@ -33,8 +46,7 @@ export default function WalkSetupPage() {
   return (
     <main className={styles.screen}>
       <div className={styles.map}>
-        {/* TODO(map-shell): the shared map component, centred on the person. */}
-        <p className={styles.mapNote}>{t.walk.mapPlaceholder}</p>
+        <MapView center={here ?? DEFAULT_CENTER} userLocation={here} />
       </div>
 
       <section className={styles.sheet} aria-labelledby="walk-title">

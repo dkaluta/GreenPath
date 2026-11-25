@@ -300,7 +300,6 @@ const he = {
     decrease: "פחות",
     increase: "יותר",
     findRoute: "מצאו לי מסלול",
-    mapPlaceholder: "המפה תופיע כאן",
   },
   route: {
     kinds: {
@@ -640,7 +639,6 @@ const ar: Strings = {
     decrease: "أقل",
     increase: "أكثر",
     findRoute: "ابحثوا لي عن مسار",
-    mapPlaceholder: "ستظهر الخريطة هنا",
   },
   route: {
     kinds: {
@@ -983,7 +981,6 @@ const en: Strings = {
     decrease: "Less",
     increase: "More",
     findRoute: "Find me a route",
-    mapPlaceholder: "The map will appear here",
   },
   route: {
     kinds: {
