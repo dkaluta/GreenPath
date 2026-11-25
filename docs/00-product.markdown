@@ -181,6 +181,10 @@ for Arabic, regular and bold. Buttons and controls are pill-shaped
 - **Data**: Meta's CHMv2 canopy-height map, יער עירוני דיגיטלי, and the ShadeMap
   API for computing and showing shadows.
 - **Navigation**: a shade-aware routing algorithm on OpenStreetMap data.
+  **Decided and built**: our own small router on Workers over a precomputed
+  street graph of the pilot city (Givatayim), each street piece scored for shade
+  from יער עירוני דיגיטלי trees and CHMv2 canopy heights. ShadeMap is left for
+  later, as a map layer. See [6. Shade routing](06-shade-routing.markdown).
 - **Tree photos**: users are asked to photograph trees, with as little friction
   as possible.
 
@@ -193,7 +197,6 @@ mechanism is still being designed.
 - **Passkey implementation.** Supabase Auth, a WebAuthn library on the Hono
   server (for example `@simplewebauthn/server`, which runs on Workers), or a
   hosted provider. Adding a library needs approval first; see the README.
-- **Routing engine**: our own on OSM, or a hosted one with a shade cost.
 
 ## Decided
 
@@ -205,3 +208,6 @@ mechanism is still being designed.
   MapLibre's right-to-left text plugin, loaded from unpkg the first time one is
   drawn. The map component is `client/features/map/` (`<MapView />`); its
   overlay API for routes and markers is described in its `index.ts`.
+- **Routing engine** (November 2026): our own small router on Workers over a
+  precomputed street graph of the pilot city, scored for shade. See Technology
+  above and [6. Shade routing](06-shade-routing.markdown).

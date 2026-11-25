@@ -32,3 +32,6 @@ npm-debug.log*
 
 # Test output
 coverage/
+
+# The pilot build script's downloads (1.6 GB of tree data, OSM, CHMv2)
+scripts/pilot/.cache/

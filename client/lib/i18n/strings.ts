@@ -125,6 +125,45 @@ const he = {
       purpose: "סוגי העצים שאספתם, והרחובות שעזרתם לאמת.",
     },
   },
+  walk: {
+    units: {
+      minutes: "זמן",
+      meters: "מרחק",
+      steps: "צעדים",
+    },
+    unitGroup: "איך למדוד",
+    stepsUnit: "צעדים",
+    decrease: "פחות",
+    increase: "יותר",
+    findRoute: "מצאו לי מסלול",
+    mapPlaceholder: "המפה תופיע כאן",
+  },
+  route: {
+    kinds: {
+      shadiest: "הכי מוצל",
+      balanced: "מאוזן",
+      fastest: "הכי מהיר",
+      loop: "סיבוב נוסף",
+    },
+    shadeShare: "{percent} צל",
+    trees: "עצים בדרך: {count}",
+    destinationTitle: "מסלולים ליעד",
+    freeTitle: "סיבובים מוצלים",
+    options: "אפשרויות מסלול",
+    go: "יוצאים",
+    locating: "מאתרים את המיקום שלכם…",
+    loading: "מחפשים את הצל…",
+    outsideArea: "מסלולים מוצלים זמינים בינתיים רק בגבעתיים.",
+    error: "לא הצלחנו למצוא מסלול. נסו שוב.",
+    retry: "נסו שוב",
+    pilotStart:
+      "אתם מחוץ לגבעתיים, עיר הפיילוט, אז ההליכה מתחילה במרכז גבעתיים.",
+    noDestination: "בחרו יעד במפה כדי לראות מסלולים.",
+    example: "נסו מסלול לדוגמה בגבעתיים",
+    map: "מפת המסלולים",
+    credits:
+      "נתונים: © תורמי OpenStreetMap, יער עירוני דיגיטלי, CHMv2 של Meta ו-WRI",
+  },
 };
 
 export type Strings = typeof he;
@@ -251,6 +290,45 @@ const ar: Strings = {
       purpose:
         "أنواع الأشجار التي جمعتموها، والشوارع التي ساعدتم في التحقق منها.",
     },
+  },
+  walk: {
+    units: {
+      minutes: "الوقت",
+      meters: "المسافة",
+      steps: "الخطوات",
+    },
+    unitGroup: "كيف نقيس",
+    stepsUnit: "خطوة",
+    decrease: "أقل",
+    increase: "أكثر",
+    findRoute: "ابحثوا لي عن مسار",
+    mapPlaceholder: "ستظهر الخريطة هنا",
+  },
+  route: {
+    kinds: {
+      shadiest: "الأكثر ظلًا",
+      balanced: "متوازن",
+      fastest: "الأسرع",
+      loop: "جولة أخرى",
+    },
+    shadeShare: "{percent} ظل",
+    trees: "أشجار على الطريق: {count}",
+    destinationTitle: "مسارات إلى الوجهة",
+    freeTitle: "جولات مظللة",
+    options: "خيارات المسار",
+    go: "انطلقوا",
+    locating: "نحدد موقعكم…",
+    loading: "نبحث عن الظل…",
+    outsideArea: "المسارات المظللة متاحة حاليًا في جفعاتايم فقط.",
+    error: "لم نتمكن من إيجاد مسار. حاولوا مرة أخرى.",
+    retry: "حاولوا مرة أخرى",
+    pilotStart:
+      "أنتم خارج جفعاتايم، مدينة التجربة، لذا يبدأ المشي من مركز جفعاتايم.",
+    noDestination: "اختاروا وجهة على الخريطة لرؤية المسارات.",
+    example: "جرّبوا مسارًا نموذجيًا في جفعاتايم",
+    map: "خريطة المسارات",
+    credits:
+      "البيانات: © مساهمو OpenStreetMap، الغابة الحضرية الرقمية، CHMv2 من Meta وWRI",
   },
 };
 
@@ -379,6 +457,45 @@ const en: Strings = {
       purpose:
         "The tree types you have collected, and the streets you helped check.",
     },
+  },
+  walk: {
+    units: {
+      minutes: "Time",
+      meters: "Distance",
+      steps: "Steps",
+    },
+    unitGroup: "How to measure",
+    stepsUnit: "steps",
+    decrease: "Less",
+    increase: "More",
+    findRoute: "Find me a route",
+    mapPlaceholder: "The map will appear here",
+  },
+  route: {
+    kinds: {
+      shadiest: "Shadiest",
+      balanced: "Balanced",
+      fastest: "Fastest",
+      loop: "Another loop",
+    },
+    shadeShare: "{percent} shade",
+    trees: "Trees on the way: {count}",
+    destinationTitle: "Routes to your destination",
+    freeTitle: "Shaded loops",
+    options: "Route options",
+    go: "Let's go",
+    locating: "Finding where you are…",
+    loading: "Looking for shade…",
+    outsideArea: "Shaded routes are only available in Givatayim for now.",
+    error: "We couldn't find a route. Try again.",
+    retry: "Try again",
+    pilotStart:
+      "You're outside Givatayim, the pilot city, so the walk starts in central Givatayim.",
+    noDestination: "Pick a destination on the map to see routes.",
+    example: "Try an example route in Givatayim",
+    map: "Route map",
+    credits:
+      "Data: © OpenStreetMap contributors, Digital Urban Forest, CHMv2 by Meta and WRI",
   },
 };
 
