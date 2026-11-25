@@ -47,7 +47,10 @@ export function SearchBox({
       <input
         ref={inputRef}
         type="search"
-        dir="auto"
+        // Typed text picks its own direction, but an empty field with
+        // dir="auto" is left to right, which pushed the placeholder to the
+        // wrong side in Hebrew and Arabic. Empty, it follows the page.
+        dir={value ? "auto" : undefined}
         className={styles.searchInput}
         placeholder={t.home.searchPlaceholder}
         aria-label={t.home.searchLabel}
