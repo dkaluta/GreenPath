@@ -1,0 +1,110 @@
+/*
+ * The wireframes' buttons: a full-width dark pill, an outlined pill, and a
+ * quiet text button. For both <button> and <Link>, on the tree screens.
+ */
+
+.primary,
+.secondary,
+.quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-block-size: 3.5rem;
+  padding-inline: var(--space-6);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.primary {
+  inline-size: 100%;
+  background-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.secondary {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.secondary:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.quiet {
+  min-block-size: 2.75rem;
+  background: none;
+  color: var(--color-text-muted);
+}
+
+.quiet:hover {
+  color: var(--color-text);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible,
+.quiet:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.primary:disabled,
+.secondary:disabled,
+.quiet:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Two buttons side by side, sharing the width. */
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* A round icon button, like the close button on the report sheet. */
+.round {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.round:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.round:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Errors, said where the person is looking. */
+.error {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-danger-subtle);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+/* Arrows that point a way are mirrored in right-to-left languages. */
+.flipInRtl:dir(rtl) {
+  transform: scaleX(-1);
+}

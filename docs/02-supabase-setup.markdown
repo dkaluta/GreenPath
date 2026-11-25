@@ -1,7 +1,8 @@
 # 2. Setting up Supabase
 
-Supabase gives you two things: somewhere to keep your data, and a way to log
-people in. This page connects your copy of the app to your own Supabase project.
+Supabase gives you two things: somewhere to keep your data, and a way to sign
+people in (with passkeys, see [3. Passkey sign-in](03-passkeys.markdown)). This
+page connects your copy of the app to your own Supabase project.
 
 **One project per team.** Do not share one across teams.
 
@@ -73,7 +74,7 @@ Your **project ref** is the part before `.supabase.co` in your URL - in
 ones it has. Run it again whenever you add a migration, or after pulling someone
 else's.
 
-You should now see an `events` table under **Table Editor**, and an
+You should now see `events` and `profiles` tables under **Table Editor**, and an
 `event-images` bucket under **Storage**.
 
 ## Check it worked
@@ -95,38 +96,22 @@ dev server was started before you filled them in - stop it with `Ctrl+C` and
 start it again. If it says `unreachable`, check `SUPABASE_URL` and
 `SUPABASE_SECRET_KEY` for typos.
 
-## Turn off email confirmation, for now
-
-By default Supabase emails every new account a link they have to click before
-they can log in. While you are building, that is a nuisance: the free plan only
-sends a couple of emails an hour, they often land in spam, and everyone on the
-team needs an account.
-
-In Supabase: **Authentication** -> **Sign In / Providers** -> **Email**, and
-turn off **Confirm email**. Save.
-
-> Turn it back on before the organisation starts using the app for real,
-> otherwise anyone can sign up with an address that is not theirs.
-
-If you leave it on, signing up still works - the app tells you to go and check
-your email - but you cannot log in until you click the link.
-
 ## Create an account
 
-Open **http://localhost:3000/signin**, enter an email and a password, and press
-**Sign Up**.
+Accounts are made with an email link and a passkey. Turn passkeys on and allow
+the link's address first, as [3. Passkey sign-in](03-passkeys.markdown)
+explains, then open **http://localhost:3000/signin** and choose **Create an
+account**.
 
-Use a real address, or at least a realistic one. Supabase rejects some obviously
-fake domains, `@example.com` among them, with "Email address is invalid".
+Use a real address. Supabase rejects some obviously fake domains, `@example.com`
+among them, with "Email address is invalid". Until you set up your own SMTP,
+Supabase only emails members of your Supabase organisation, so use your own
+address. It is only used to send the link; the app never shows it.
 
-You should land back on the home page with your address shown **twice**:
-
-- **hey ... :)** in the footer: what the browser knows from your login.
-- **The server knows you as:** what the server says after checking your token.
-
-The second one is the one that matters. It means the whole chain works: the
-browser got a token, sent it to your server, and the server verified it against
-Supabase independently.
+You should land back on the home page with your generated username, like
+`gentle shady olive`, in the footer. That means the whole chain works: the
+browser got a token, sent it to your server, the server verified it against
+Supabase independently and created your profile.
 
 ## About Row Level Security
 
@@ -145,9 +130,9 @@ can read the code, test it, and explain it. See
 ## Optional: sample data
 
 `supabase/seed.sql` adds a few example events, attached to the first user in
-your project. Sign up first, then paste it into the dashboard's **SQL Editor**
-and press Run. Entirely optional.
+your project. Create an account first, then paste it into the dashboard's **SQL
+Editor** and press Run. Entirely optional.
 
 ## Next
 
-[3. Sign in with Google](03-google-sign-in.markdown).
+[3. Passkey sign-in](03-passkeys.markdown).

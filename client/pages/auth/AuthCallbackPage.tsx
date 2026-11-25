@@ -1,17 +1,42 @@
 import { Navigate } from "react-router";
+import { Spinner } from "../../components";
 import { useAuth } from "../../lib/auth";
+import { takeEmailFlow } from "../../lib/passkeys";
 
 /**
- * Where Google (or an email confirmation link) sends the browser back to.
+ * Where the link in the sign-up or recovery email lands.
  *
- * There is almost nothing to do here: the Supabase client is set up with
- * `detectSessionInUrl`, so it reads the code out of the URL and finishes the
- * login by itself. We just wait for that to land, then move along.
+ * The Supabase client is set up with `detectSessionInUrl`, so it reads the
+ * login out of the URL by itself. We wait for that, then send the person on
+ * to the next step of the flow they started: choosing a username (sign-up)
+ * or making a passkey (recovery). See client/pages/signin/SignInPage.tsx.
  */
 export default function AuthCallbackPage() {
   const { user, loading } = useAuth();
 
-  if (loading) return <main>Logging in...</main>;
+  if (loading) {
+    return (
+      <main>
+        <Spinner />
+      </main>
+    );
+  }
 
-  return <Navigate to={user ? "/" : "/signin"} replace />;
+  if (!user) {
+    // Expired, already used, or opened in a browser that blocks storage.
+    return <Navigate to="/signin" replace state={{ linkFailed: true }} />;
+  }
+
+  const flow = takeEmailFlow(localStorage);
+  return (
+    <Navigate
+      to="/signin"
+      replace
+      state={{
+        step: flow?.mode === "signUp" ? "username" : "passkey",
+        mode: flow?.mode ?? "recover",
+        from: flow?.from ?? "/",
+      }}
+    />
+  );
 }

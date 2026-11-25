@@ -1,0 +1,98 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  max-inline-size: var(--content-width-narrow);
+  padding-block: var(--space-8);
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  inline-size: 6rem;
+  block-size: 6rem;
+  border-radius: var(--radius-full);
+  background-color: color-mix(in oklab, var(--color-leaf), var(--color-surface) 55%);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Three numbers in a row, the label under each, divided by thin lines. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  inline-size: 100%;
+  margin: 0;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--space-1);
+  padding-block: var(--space-2);
+}
+
+.stats > div + div {
+  border-inline-start: var(--border-width) solid var(--color-border);
+}
+
+.stats dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.stats dd {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.trees {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+}
+
+.treeIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg);
+}
+
+.species {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  inline-size: 100%;
+  margin-block-start: auto;
+}
+
+.status {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}

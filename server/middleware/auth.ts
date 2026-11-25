@@ -6,7 +6,7 @@ import { fail } from "../lib/errors";
 /*
  * How logging in works, from the server's side.
  *
- * When someone logs in, Supabase gives the browser a "token" - a long string
+ * When someone signs in with their passkey, Supabase gives the browser a "token" - a long string
  * that says who they are, signed by Supabase so it cannot be faked. The
  * browser sends it with every request (client/lib/api.ts does this for you):
  *
@@ -72,10 +72,9 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
       );
     }
 
-    c.set("user", {
-      id: payload.sub,
-      email: typeof payload.email === "string" ? payload.email : "",
-    });
+    // Only the id. The token also carries the email, which is for account
+    // recovery only and must never reach a handler (docs/00-product.markdown).
+    c.set("user", { id: payload.sub });
   } catch (error) {
     // Expired, edited, or signed by someone who is not our Supabase project.
     if (error instanceof joseErrors.JOSEError) {

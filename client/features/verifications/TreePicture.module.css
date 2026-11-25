@@ -1,0 +1,35 @@
+.picture {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background-color: color-mix(in oklab, var(--color-border), var(--color-surface) 40%);
+  color: var(--color-text-muted);
+}
+
+.sm {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.md {
+  inline-size: 100%;
+  aspect-ratio: 1;
+}
+
+.lg {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-card);
+}
+
+.image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  opacity: 0.7;
+}

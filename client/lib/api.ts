@@ -30,7 +30,7 @@ export class ApiRequestError extends Error {
 /**
  * Calls our server.
  *
- *     const me = await api<{ id: string; email: string }>("/api/me");
+ *     const me = await api<{ id: string; username: string }>("/api/me");
  *     await api("/api/events", { method: "POST", body: { title: "Hi" } });
  *
  * It attaches the logged-in user's token automatically, sends and receives

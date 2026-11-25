@@ -1,0 +1,25 @@
+/* The grey tree card: picture at the start, words beside it. */
+.tree {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-card);
+  background-color: var(--color-bg);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.line {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
