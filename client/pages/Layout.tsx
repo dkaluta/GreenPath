@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { Spinner } from "../components";
 import { useAuth } from "../lib/auth";
 import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
@@ -69,6 +69,7 @@ export function Layout() {
  */
 function AuthAction() {
   const { user, profile, loading, needsPasskey, signOut } = useAuth();
+  const location = useLocation();
 
   if (loading) return null;
   if (!user) return <Link to="/signin">{t.nav.signIn}</Link>;
@@ -79,6 +80,13 @@ function AuthAction() {
       {profile ? (
         <>
           {t.auth.signedInAs} <bdi dir="ltr">{profile.username}</bdi>
+          {" · "}
+          <Link
+            to="/signin"
+            state={{ step: "passkey", mode: "add", from: location.pathname }}
+          >
+            {t.auth.addPasskey}
+          </Link>
           {" · "}
         </>
       ) : null}

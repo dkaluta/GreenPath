@@ -58,17 +58,18 @@ const he = {
     noAccount: "אין לכם חשבון?",
     createAccount: "יצירת חשבון",
     lostPasskey: "איבדתם את מפתח הגישה, או נכנסים ממכשיר חדש?",
-    recover: "שחזור עם קוד באימייל",
+    recover: "שחזור דרך האימייל",
     signUpTitle: "יצירת חשבון",
     signUpIntro:
-      "נשלח קוד לאימייל שלכם. האימייל משמש רק לשחזור החשבון, ואף אחד לא יראה אותו.",
+      "נשלח לכם אימייל עם קישור כניסה. האימייל משמש רק לשחזור החשבון, ואף אחד לא יראה אותו.",
     recoverTitle: "שחזור החשבון",
     recoverIntro:
-      "נשלח קוד לאימייל של החשבון, ואז תיצרו מפתח גישה חדש במכשיר הזה.",
-    sendCode: "שליחת קוד",
+      "נשלח קישור לאימייל של החשבון, ואז תיצרו מפתח גישה חדש במכשיר הזה.",
+    sendCode: "שליחת אימייל",
     codeTitle: "בדקו את האימייל",
-    codeSent: "אם יש חשבון עם הכתובת הזו, שלחנו אליה קוד. הקלידו אותו כאן.",
-    codeLabel: "הקוד מהאימייל",
+    codeSent:
+      "אם יש חשבון עם הכתובת הזו, שלחנו אליה אימייל. פתחו את הקישור שבו במכשיר הזה, או הקלידו כאן את הקוד אם יש בו קוד.",
+    codeLabel: "הקוד מהאימייל (אם יש)",
     verify: "אישור",
     resend: "שליחה מחדש",
     resent: "שלחנו קוד חדש.",
@@ -82,6 +83,10 @@ const he = {
     passkeyTitle: "יצירת מפתח גישה",
     passkeyIntro: "בפעם הבאה תיכנסו עם טביעת אצבע, זיהוי פנים או קוד המכשיר.",
     createPasskey: "יצירת מפתח גישה",
+    addPasskey: "הוספת מפתח גישה",
+    addPasskeyTitle: "מפתח גישה נוסף",
+    addPasskeyIntro:
+      "אפשר מפתח גישה בכל מכשיר: הטלפון, המחשב או מפתח אבטחה. כל אחד מהם יכניס אתכם לאותו חשבון.",
     finishSetup: "השלמת ההרשמה",
     signedInAs: "מחוברים בתור",
     notSetUpTitle: "Supabase עוד לא מוגדר",
@@ -108,6 +113,8 @@ const he = {
       tooManyTries: "יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.",
       wrongAccount:
         "מפתח הגישה הזה שייך לחשבון אחר. בחרו את המפתח של האימייל שהקלדתם.",
+      tooManyPasskeys: "יש לחשבון כבר את המספר המרבי של מפתחות גישה.",
+      linkFailed: "הקישור פג תוקף או שכבר השתמשו בו. בקשו חדש.",
       generic: "משהו השתבש. נסו שוב.",
     },
   },
@@ -207,18 +214,18 @@ const ar: Strings = {
     noAccount: "ليس لديكم حساب؟",
     createAccount: "إنشاء حساب",
     lostPasskey: "فقدتم مفتاح المرور، أو تدخلون من جهاز جديد؟",
-    recover: "الاستعادة برمز عبر البريد",
+    recover: "الاستعادة عبر البريد",
     signUpTitle: "إنشاء حساب",
     signUpIntro:
-      "سنرسل رمزًا إلى بريدكم الإلكتروني. يُستخدم البريد فقط لاستعادة الحساب، ولن يراه أحد.",
+      "سنرسل إليكم رسالة فيها رابط للدخول. يُستخدم البريد فقط لاستعادة الحساب، ولن يراه أحد.",
     recoverTitle: "استعادة الحساب",
     recoverIntro:
-      "سنرسل رمزًا إلى بريد الحساب، ثم تنشئون مفتاح مرور جديدًا على هذا الجهاز.",
-    sendCode: "إرسال الرمز",
+      "سنرسل رابطًا إلى بريد الحساب، ثم تنشئون مفتاح مرور جديدًا على هذا الجهاز.",
+    sendCode: "إرسال الرسالة",
     codeTitle: "تحقّقوا من بريدكم",
     codeSent:
-      "إذا كان هناك حساب بهذا العنوان، فقد أرسلنا إليه رمزًا. اكتبوه هنا.",
-    codeLabel: "الرمز من البريد",
+      "إذا كان هناك حساب بهذا العنوان، فقد أرسلنا إليه رسالة. افتحوا الرابط فيها على هذا الجهاز، أو اكتبوا الرمز هنا إن وُجد.",
+    codeLabel: "الرمز من البريد (إن وُجد)",
     verify: "تأكيد",
     resend: "إعادة الإرسال",
     resent: "أرسلنا رمزًا جديدًا.",
@@ -233,6 +240,10 @@ const ar: Strings = {
     passkeyIntro:
       "في المرة القادمة ستدخلون ببصمة الإصبع أو التعرّف على الوجه أو رمز الجهاز.",
     createPasskey: "إنشاء مفتاح مرور",
+    addPasskey: "إضافة مفتاح مرور",
+    addPasskeyTitle: "مفتاح مرور إضافي",
+    addPasskeyIntro:
+      "يمكنكم إضافة مفتاح مرور لكل جهاز: الهاتف أو الحاسوب أو مفتاح أمان. كلٌّ منها يُدخلكم إلى الحساب نفسه.",
     finishSetup: "إكمال التسجيل",
     signedInAs: "متصلون باسم",
     notSetUpTitle: "لم يتم إعداد Supabase بعد",
@@ -259,6 +270,8 @@ const ar: Strings = {
       tooManyTries: "محاولات كثيرة جدًا. انتظروا بضع دقائق ثم حاولوا مرة أخرى.",
       wrongAccount:
         "مفتاح المرور هذا يخص حسابًا آخر. اختاروا مفتاح البريد الذي كتبتموه.",
+      tooManyPasskeys: "وصل الحساب إلى الحد الأقصى من مفاتيح المرور.",
+      linkFailed: "انتهت صلاحية الرابط أو سبق استخدامه. اطلبوا رابطًا جديدًا.",
       generic: "حدث خطأ ما. حاولوا مرة أخرى.",
     },
   },
@@ -362,18 +375,18 @@ const en: Strings = {
     noAccount: "No account yet?",
     createAccount: "Create an account",
     lostPasskey: "Lost your passkey, or on a new device?",
-    recover: "Recover with an email code",
+    recover: "Recover by email",
     signUpTitle: "Create an account",
     signUpIntro:
-      "We'll send a code to your email. It is used only to recover your account, and nobody will see it.",
+      "We'll email you a sign-in link. It is used only to recover your account, and nobody will see it.",
     recoverTitle: "Recover your account",
     recoverIntro:
-      "We'll send a code to the account's email, then you'll make a new passkey on this device.",
-    sendCode: "Send code",
+      "We'll email a link to the account's address, then you'll make a new passkey on this device.",
+    sendCode: "Send email",
     codeTitle: "Check your email",
     codeSent:
-      "If there is an account with that address, we sent it a code. Type it here.",
-    codeLabel: "Code from the email",
+      "If there is an account with that address, we sent it an email. Open the link in it on this device, or type the code here if it has one.",
+    codeLabel: "Code from the email (if it has one)",
     verify: "Confirm",
     resend: "Send again",
     resent: "We sent a new code.",
@@ -388,6 +401,10 @@ const en: Strings = {
     passkeyIntro:
       "Next time you'll sign in with your fingerprint, face or device PIN.",
     createPasskey: "Create a passkey",
+    addPasskey: "Add a passkey",
+    addPasskeyTitle: "Another passkey",
+    addPasskeyIntro:
+      "You can have a passkey on every device: your phone, your computer or a security key. Each one signs in to the same account.",
     finishSetup: "Finish signing up",
     signedInAs: "Signed in as",
     notSetUpTitle: "Supabase is not set up yet",
@@ -414,6 +431,9 @@ const en: Strings = {
       tooManyTries: "Too many tries. Wait a few minutes and try again.",
       wrongAccount:
         "That passkey belongs to a different account. Pick the one for the email you typed.",
+      tooManyPasskeys: "This account already has the most passkeys allowed.",
+      linkFailed:
+        "That link has expired or was already used. Ask for a new one.",
       generic: "Something went wrong. Try again.",
     },
   },

@@ -10,15 +10,19 @@ them.
 
 ## How it works
 
-| Step               | What the person does                                                        |
-| ------------------ | --------------------------------------------------------------------------- |
-| Sign up            | Types an email, types the code sent to it, gets a username, makes a passkey |
-| Sign in            | Types the email, then uses the passkey                                      |
-| Lost the passkey   | Types the email and a new code, then makes a new passkey                    |
-| New phone/computer | Same as a lost passkey, or use a passkey synced from another device         |
+| Step             | What the person does                                                            |
+| ---------------- | ------------------------------------------------------------------------------- |
+| Sign up          | Types an email, opens the link sent to it, gets a username, makes a passkey     |
+| Sign in          | Types the email, then uses the passkey                                          |
+| Another device   | Signed in, presses **Add a passkey** in the footer and makes one on that device |
+| Lost the passkey | Types the email, opens a new link, then makes a new passkey                     |
 
+- **An account can have many passkeys**, one per phone, computer or security
+  key, and any of them signs in. Recovery adds a new one next to the old ones;
+  it does not replace them. Supabase caps the number per account and the app
+  says so when it is reached.
 - **The email is only for recovery.** It lives in Supabase Auth (`auth.users`)
-  and is used for the sign-up and recovery codes. It is never shown on screen,
+  and is used for the sign-up and recovery emails. It is never shown on screen,
   never copied into `profiles`, and the server never returns it. The auth
   middleware drops it from the token before any route sees the user.
 - **The username is generated**: three English words, re-rollable, never typed.
@@ -34,7 +38,7 @@ The passkey ceremony is Supabase's own (`signInWithPasskey()` and
 test sign-in again whenever you upgrade it.
 
 Supabase only lets a confirmed email user register a passkey, which is why
-signing up starts with an email code.
+signing up starts with an email.
 
 ## Turn on passkeys
 
@@ -58,26 +62,34 @@ If the switch seems not to take effect (sign-in says passkeys are switched off),
 people have reported that changing any other Auth setting and changing it back
 makes it apply.
 
-## Send codes, not links
+## The sign-up and recovery email
 
-Signing up and recovery use a 6-digit code typed into the app, not a link to
-click. Supabase sends a link unless the email template asks for the code.
+Supabase's own email sends a **link**. It opens `/auth/callback`, which signs
+the person in and takes them to the next step: the username (sign-up) or a new
+passkey (recovery). The link must be allowed, so in **Authentication** -> **URL
+Configuration** -> **Redirect URLs** add:
 
-In Supabase: **Authentication** -> **Emails** -> **Templates** -> **Magic
-Link**, and make the body show the code:
-
-```html
-<h2>Your GreenPath code</h2>
-<p>Type this code in the app: <strong>{{ .Token }}</strong></p>
-<p>If you did not ask for it, ignore this email.</p>
+```text
+http://localhost:3000/**
+https://your-address.workers.dev/**
 ```
 
-Do the same in **Confirm signup**. Leave **Confirm email** on: the code is the
+The app also accepts a typed **code**, for when the link is opened on another
+device. Supabase's own email has no code, and its templates can only be edited
+once you use your own SMTP. When you do, add the code to **Magic link or OTP**
+and **Confirm sign up**:
+
+```html
+<p>Or type this code in the app: <strong>{{ .Token }}</strong></p>
+```
+
+Leave **Confirm email** on: following the link (or typing the code) is the
 confirmation.
 
-The free plan sends only a few emails an hour, and they often land in spam. For
-real use, set up your own SMTP server under **Authentication** -> **Emails** ->
-**SMTP Settings**.
+**Before real users sign up, set up your own SMTP** under **Authentication** ->
+**Emails** -> **SMTP Settings**. Supabase's own email sends only a few emails an
+hour, and only to addresses of your Supabase organisation's members, so nobody
+else can sign up or recover without it.
 
 ## Try it
 
@@ -85,7 +97,9 @@ Open **http://localhost:3000/signin**, choose **Create an account**, and go
 through the steps. You should end up on the home page with your username in the
 footer.
 
-Sign out, then sign in again with the same email and the passkey.
+Sign out, then sign in again with the same email and the passkey. To try a
+second passkey, press **Add a passkey** in the footer and choose your phone or a
+security key in the browser's prompt.
 
 Things that commonly go wrong:
 

@@ -39,6 +39,7 @@ export type AuthErrorKind =
   | "badEmail"
   | "tooManyTries"
   | "wrongAccount"
+  | "tooManyPasskeys"
   | "generic";
 
 const BY_CODE: Record<string, AuthErrorKind> = {
@@ -49,6 +50,7 @@ const BY_CODE: Record<string, AuthErrorKind> = {
   ERROR_INVALID_RP_ID: "wrongSite",
   // From Supabase Auth.
   webauthn_credential_exists: "alreadyRegistered",
+  too_many_passkeys: "tooManyPasskeys",
   webauthn_credential_not_found: "unknownPasskey",
   webauthn_challenge_not_found: "expired",
   webauthn_challenge_expired: "expired",
@@ -104,4 +106,62 @@ export function isPlausibleCode(code: string): boolean {
 /** True when two emails are the same address, ignoring case and spaces. */
 export function sameEmail(a: string | undefined, b: string): boolean {
   return (a ?? "").trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/*
+ * The sign-up and recovery email has a link in it (and, with a custom
+ * template, a code). Following the link reloads the app, maybe in a new tab,
+ * so where the person was in the flow is saved here and read back by
+ * client/pages/auth/AuthCallbackPage.tsx. It holds no email.
+ */
+
+export type EmailFlow = { mode: "signUp" | "recover"; from: string };
+
+const FLOW_KEY = "greenpath.emailFlow";
+/** Supabase's email links last an hour by default. */
+const FLOW_MAX_AGE_MS = 60 * 60 * 1000;
+
+type FlowStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+export function saveEmailFlow(
+  storage: FlowStorage,
+  flow: EmailFlow,
+  now = Date.now(),
+) {
+  try {
+    storage.setItem(FLOW_KEY, JSON.stringify({ ...flow, at: now }));
+  } catch {
+    // Private browsing may refuse storage. The link still signs them in;
+    // they just start from the passkey step.
+  }
+}
+
+/** Reads the saved flow once, then forgets it. Null if none or too old. */
+export function takeEmailFlow(
+  storage: FlowStorage,
+  now = Date.now(),
+): EmailFlow | null {
+  let raw: string | null;
+  try {
+    raw = storage.getItem(FLOW_KEY);
+    storage.removeItem(FLOW_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as Partial<EmailFlow & { at: number }>;
+    if (value.mode !== "signUp" && value.mode !== "recover") return null;
+    if (typeof value.at !== "number" || now - value.at > FLOW_MAX_AGE_MS) {
+      return null;
+    }
+    // Only paths inside the app, never another site.
+    const from =
+      typeof value.from === "string" && /^\/(?!\/)/.test(value.from)
+        ? value.from
+        : "/";
+    return { mode: value.mode, from };
+  } catch {
+    return null;
+  }
 }

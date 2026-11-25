@@ -16,13 +16,20 @@ import styles from "./SignInPage.module.css";
  * Sign in and sign up, with passkeys. The steps:
  *
  *   signIn ─► (email + passkey) ─► done
- *     ├─► email (sign up) ─► code ─► username ─► passkey ─► done
- *     └─► email (recover) ─► code ───────────► passkey ─► done
+ *     ├─► email (sign up) ─► link/code ─► username ─► passkey ─► done
+ *     └─► email (recover) ─► link/code ───────────► passkey ─► done
  *
- * The email is only used for the code. It is never shown back on screen.
+ * Signed in already, "Add a passkey" in the footer opens the passkey step on
+ * its own (mode "add"): one account can have a passkey on every device.
+ *
+ * Supabase's own email has only a link, which lands on /auth/callback and
+ * comes back here at the right step. A custom template can add a code, typed
+ * on the "code" step. The email is only used for this, and is never shown
+ * back on screen.
  */
 type Step = "signIn" | "email" | "code" | "username" | "passkey";
-type Mode = "signUp" | "recover";
+/** "add" is a signed-in person adding another passkey (another device). */
+type Mode = "signUp" | "recover" | "add";
 
 // Read once: whether WebAuthn exists does not change while the page is open.
 const SUPPORT = passkeySupport();
@@ -31,13 +38,23 @@ export default function SignInPage() {
   const auth = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  // Set by RequireAuth (where to go back to), and by the page the emailed
+  // link lands on (client/pages/auth/AuthCallbackPage.tsx).
+  const arrived = (location.state ?? {}) as {
+    from?: string;
+    step?: Step;
+    mode?: Mode;
+    linkFailed?: boolean;
+  };
+  const from = arrived.from ?? "/";
 
-  const [step, setStep] = useState<Step>("signIn");
-  const [mode, setMode] = useState<Mode>("signUp");
+  const [step, setStep] = useState<Step>(arrived.step ?? "signIn");
+  const [mode, setMode] = useState<Mode>(arrived.mode ?? "signUp");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    arrived.linkFailed ? t.auth.errors.linkFailed : null,
+  );
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -70,6 +87,8 @@ export default function SignInPage() {
   // Already signed in. Someone who has no passkey yet (they left half-way
   // through signing up) goes straight to making one; everyone else moves on.
   let current = step;
+  // Adding a passkey needs someone signed in.
+  if (mode === "add" && !auth.user) current = "signIn";
   if (auth.user && (step === "signIn" || step === "email" || step === "code")) {
     if (!auth.needsPasskey) return <Navigate to={from} replace />;
     current = "passkey";
@@ -107,7 +126,7 @@ export default function SignInPage() {
   function onSendCode(event: FormEvent) {
     event.preventDefault();
     void run(async () => {
-      await auth.sendEmailCode(email, mode === "signUp");
+      await auth.sendEmailCode(email, mode === "signUp", from);
       setCode("");
       setStep("code");
     });
@@ -255,7 +274,7 @@ export default function SignInPage() {
             disabled={busy}
             onClick={() =>
               void run(async () => {
-                await auth.sendEmailCode(email, mode === "signUp");
+                await auth.sendEmailCode(email, mode === "signUp", from);
                 setNotice(t.auth.resent);
               })
             }
@@ -301,10 +320,13 @@ export default function SignInPage() {
         </Frame>
       );
 
-    case "passkey":
+    case "passkey": {
+      const adding = mode === "add" && !auth.needsPasskey;
       return (
-        <Frame title={t.auth.passkeyTitle}>
-          <p className={styles.intro}>{t.auth.passkeyIntro}</p>
+        <Frame title={adding ? t.auth.addPasskeyTitle : t.auth.passkeyTitle}>
+          <p className={styles.intro}>
+            {adding ? t.auth.addPasskeyIntro : t.auth.passkeyIntro}
+          </p>
           <div className={styles.actions}>
             <Button
               type="button"
@@ -319,23 +341,35 @@ export default function SignInPage() {
             >
               {t.auth.createPasskey}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  await auth.signOut();
-                  go("signIn");
-                })
-              }
-            >
-              {t.nav.signOut}
-            </Button>
+            {adding ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy}
+                onClick={() => navigate(from, { replace: true })}
+              >
+                {t.auth.back}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    await auth.signOut();
+                    go("signIn");
+                  })
+                }
+              >
+                {t.nav.signOut}
+              </Button>
+            )}
           </div>
           {messages}
         </Frame>
       );
+    }
   }
 }
 

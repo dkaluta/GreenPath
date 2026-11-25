@@ -84,10 +84,11 @@ These are decisions, not suggestions. Code that breaks one is a bug.
 
 - The way to sign in is a **passkey** (WebAuthn), through Supabase Auth's
   passkey support. No password.
-- Signing up asks for an email, a code sent to it, then a passkey. Signing in is
-  the email and then the passkey. The email is used **only** for those codes: to
-  sign up and to recover the account (a lost passkey, a new device). It is never
-  shown, never stored outside Supabase Auth, and never returned by the API.
+- Signing up asks for an email, a link (or code) sent to it, then a passkey.
+  Signing in is the email and then the passkey. An account can have a passkey on
+  each device. The email is used **only** for those links and codes: to sign up
+  and to recover the account (a lost passkey, a new device). It is never shown,
+  never stored outside Supabase Auth, and never returned by the API.
 - The starter kit's email-and-password and Google sign-in are removed.
 - How it is built and set up: [3. Passkey sign-in](03-passkeys.markdown).
 
@@ -191,7 +192,7 @@ mechanism is still being designed.
 ## Open decisions
 
 - **Passkey implementation.** Decided: Supabase Auth passkeys (experimental in
-  supabase-js), with an email code to sign up and to recover. See
+  supabase-js), with an emailed link or code to sign up and to recover. See
   [3. Passkey sign-in](03-passkeys.markdown).
 - **Map library and tiles** for the home and navigation screens. A vector map
   (for example MapLibre GL with OpenStreetMap tiles) is what makes the custom

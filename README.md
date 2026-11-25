@@ -112,7 +112,7 @@ before launch with `VITE_SHOW_DEMOS=false`; see
    its rules
 1. [Quickstart](docs/01-quickstart.markdown): get it running on your machine
 2. [Supabase setup](docs/02-supabase-setup.markdown): the database and login
-3. [Passkey sign-in](docs/03-passkeys.markdown): passkeys, email codes and
+3. [Passkey sign-in](docs/03-passkeys.markdown): passkeys, email links and
    usernames
 4. [Deploy](docs/04-deploy.markdown): put it on the internet
 5. [Adding a feature](docs/05-adding-a-feature.markdown): the pattern to copy

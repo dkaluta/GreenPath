@@ -17,17 +17,17 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { api } from "./api";
 import { SUPABASE_ENABLED } from "./config";
 import { t } from "./i18n";
-import { sameEmail } from "./passkeys";
+import { sameEmail, saveEmailFlow } from "./passkeys";
 import { supabase } from "./supabase";
 
 /*
  * How signing in works (Supabase Auth with passkeys; see
  * docs/02-supabase-setup.markdown):
  *
- * - Sign up: an email, a one-time code sent to it, a generated username,
+ * - Sign up: an email, the link or code sent to it, a generated username,
  *   then a passkey on this device.
  * - Sign in: the email, then the passkey.
- * - Lost the passkey, or on a new device: the email and a code again, then
+ * - Lost the passkey, or on a new device: the email and a link again, then
  *   a new passkey.
  *
  * The email is only ever used for those codes. It is never shown on screen,
@@ -50,11 +50,16 @@ type AuthState = {
   /** Opens the browser's passkey prompt and signs in as `email`. */
   signInWithPasskey: (email: string) => Promise<void>;
   /**
-   * Emails a one-time code. `create` is true when signing up; when false
+   * Emails a sign-in link (and a code, if the email template has one). `create` is true when signing up; when false
    * and no account has that email, nothing is sent, and we still say "sent"
    * so the screen does not reveal who has an account.
    */
-  sendEmailCode: (email: string, create: boolean) => Promise<void>;
+  sendEmailCode: (
+    email: string,
+    create: boolean,
+    /** Where to go once done, after following the emailed link. */
+    from: string,
+  ) => Promise<void>;
   /** Checks the code from the email, and signs in. */
   verifyEmailCode: (email: string, code: string) => Promise<void>;
   /** Saves a new passkey for the signed-in person, on this device. */
@@ -160,10 +165,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       },
 
-      async sendEmailCode(email, create) {
+      async sendEmailCode(email, create, from) {
+        saveEmailFlow(localStorage, {
+          mode: create ? "signUp" : "recover",
+          from,
+        });
         const { error } = await supabase.auth.signInWithOtp({
           email: email.trim(),
-          options: { shouldCreateUser: create },
+          options: {
+            shouldCreateUser: create,
+            // The link in the email comes back here. With Supabase's own
+            // email there is only a link; a custom template can add a code.
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
         if (!error) return;
         // Recovering an address with no account: say nothing different.

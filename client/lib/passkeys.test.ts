@@ -5,6 +5,8 @@ import {
   isPlausibleCode,
   passkeySupport,
   sameEmail,
+  saveEmailFlow,
+  takeEmailFlow,
 } from "./passkeys";
 
 class FakePublicKeyCredential {}
@@ -61,6 +63,7 @@ describe("authErrorKind", () => {
     [{ code: "email_address_invalid" }, "badEmail"],
     [{ code: "over_email_send_rate_limit" }, "tooManyTries"],
     [{ code: "wrong_account" }, "wrongAccount"],
+    [{ code: "too_many_passkeys" }, "tooManyPasskeys"],
   ])("sorts %o as %s", (error, kind) => {
     expect(authErrorKind(error)).toBe(kind);
   });
@@ -109,5 +112,63 @@ describe("sameEmail", () => {
   it("tells different addresses apart", () => {
     expect(sameEmail("dana@example.com", "dan@example.com")).toBe(false);
     expect(sameEmail(undefined, "dana@example.com")).toBe(false);
+  });
+});
+
+describe("email flow storage", () => {
+  function memoryStorage() {
+    const items = new Map<string, string>();
+    return {
+      items,
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => void items.set(key, value),
+      removeItem: (key: string) => void items.delete(key),
+    };
+  }
+
+  it("reads back what was saved, once", () => {
+    const storage = memoryStorage();
+    saveEmailFlow(storage, { mode: "signUp", from: "/collection" }, 1000);
+    expect(takeEmailFlow(storage, 2000)).toEqual({
+      mode: "signUp",
+      from: "/collection",
+    });
+    expect(takeEmailFlow(storage, 2000)).toBeNull();
+  });
+
+  it("forgets a flow older than an hour", () => {
+    const storage = memoryStorage();
+    saveEmailFlow(storage, { mode: "recover", from: "/" }, 0);
+    expect(takeEmailFlow(storage, 61 * 60 * 1000)).toBeNull();
+  });
+
+  it("never sends the person to another site", () => {
+    const storage = memoryStorage();
+    saveEmailFlow(storage, { mode: "recover", from: "//evil.example" }, 0);
+    expect(takeEmailFlow(storage, 0)?.from).toBe("/");
+  });
+
+  it("ignores junk", () => {
+    const storage = memoryStorage();
+    storage.setItem("greenpath.emailFlow", "{not json");
+    expect(takeEmailFlow(storage)).toBeNull();
+    storage.setItem("greenpath.emailFlow", JSON.stringify({ mode: "x" }));
+    expect(takeEmailFlow(storage)).toBeNull();
+  });
+
+  it("copes with storage that throws", () => {
+    const broken = {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {},
+    };
+    expect(() =>
+      saveEmailFlow(broken, { mode: "signUp", from: "/" }),
+    ).not.toThrow();
+    expect(takeEmailFlow(broken)).toBeNull();
   });
 });

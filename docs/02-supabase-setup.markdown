@@ -98,13 +98,15 @@ start it again. If it says `unreachable`, check `SUPABASE_URL` and
 
 ## Create an account
 
-Accounts are made with a passkey and an email code. Turn both on first, as
-[3. Passkey sign-in](03-passkeys.markdown) explains, then open
-**http://localhost:3000/signin** and choose **Create an account**.
+Accounts are made with an email link and a passkey. Turn passkeys on and allow
+the link's address first, as [3. Passkey sign-in](03-passkeys.markdown)
+explains, then open **http://localhost:3000/signin** and choose **Create an
+account**.
 
 Use a real address. Supabase rejects some obviously fake domains, `@example.com`
-among them, with "Email address is invalid". The address is only used to send
-the code; the app never shows it.
+among them, with "Email address is invalid". Until you set up your own SMTP,
+Supabase only emails members of your Supabase organisation, so use your own
+address. It is only used to send the link; the app never shows it.
 
 You should land back on the home page with your generated username, like
 `gentle shady olive`, in the footer. That means the whole chain works: the
