@@ -2,12 +2,9 @@ import { Suspense } from "react";
 import { Link, Outlet } from "react-router";
 import { Spinner } from "../components";
 import { useAuth } from "../lib/auth";
-import {
-  APP_NAME,
-  COURSE_CREDITS,
-  COURSE_GITHUB,
-  SHOW_DEMOS,
-} from "../lib/config";
+import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
+import { LANG } from "../lib/config";
+import { LANGUAGES, setLanguage, t, type Lang } from "../lib/i18n";
 import styles from "./Layout.module.css";
 
 /**
@@ -28,15 +25,16 @@ export function Layout() {
     <div className={styles.shell}>
       <header className={styles.header}>
         <Link to="/" className={styles.appName}>
-          {APP_NAME}
+          {t.appName}
         </Link>
         <nav className={styles.nav}>
-          <Link to="/">מפה</Link>
-          <Link to="/collection">האוסף שלי</Link>
+          <Link to="/">{t.nav.map}</Link>
+          <Link to="/collection">{t.nav.collection}</Link>
           <a href={COURSE_GITHUB} target="_blank" rel="noreferrer">
             GitHub
           </a>
           {SHOW_DEMOS ? <Link to="/demos">Demos</Link> : null}
+          <LanguageSwitcher />
         </nav>
       </header>
 
@@ -54,7 +52,7 @@ export function Layout() {
       </div>
 
       <footer className={styles.footer}>
-        <p>בשיתוף הסדנא לידע ציבורי ויער עירוני דיגיטלי</p>
+        <p>{t.partners}</p>
         <p>
           <AuthAction /> | {COURSE_CREDITS}
         </p>
@@ -73,7 +71,7 @@ function AuthAction() {
   const { user, loading, signOut } = useAuth();
 
   if (loading) return null;
-  if (!user) return <Link to="/signin">כניסה</Link>;
+  if (!user) return <Link to="/signin">{t.nav.signIn}</Link>;
 
   return (
     <>
@@ -82,8 +80,34 @@ function AuthAction() {
         className={styles.linkButton}
         onClick={() => void signOut()}
       >
-        יציאה
+        {t.nav.signOut}
       </button>
     </>
+  );
+}
+
+/**
+ * One button per language, each written in its own language so anyone can
+ * find theirs. Choosing one reloads the app in it.
+ */
+function LanguageSwitcher() {
+  return (
+    <div className={styles.languages} role="group" aria-label={t.language}>
+      {(Object.keys(LANGUAGES) as Lang[]).map((lang) => (
+        <button
+          key={lang}
+          type="button"
+          lang={lang}
+          dir={LANGUAGES[lang].dir}
+          className={styles.language}
+          aria-pressed={lang === LANG}
+          onClick={() => {
+            if (lang !== LANG) setLanguage(lang);
+          }}
+        >
+          {LANGUAGES[lang].name}
+        </button>
+      ))}
+    </div>
   );
 }

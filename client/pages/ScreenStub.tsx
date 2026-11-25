@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
+import { t } from "../lib/i18n";
 import styles from "./ScreenStub.module.css";
 
 const FIGMA_FILE = "https://www.figma.com/design/0o5WXuCJZgpvKmoM8FypEF";
 
 type ScreenStubProps = {
-  /** The screen's Hebrew title, as in the wireframe. */
-  title: string;
-  /** What the screen will do, in a sentence. */
-  purpose: string;
+  /** The screen's words, from client/lib/i18n/strings.ts. */
+  screen: { title: string; purpose: string };
   /** The wireframe frame's node id, e.g. "100:36". */
   figmaNode: string;
   /** Where the flow goes next. */
@@ -25,8 +24,7 @@ type ScreenStubProps = {
  * docs/00-product.markdown.
  */
 export function ScreenStub({
-  title,
-  purpose,
+  screen,
   figmaNode,
   next = [],
   children,
@@ -35,11 +33,11 @@ export function ScreenStub({
 
   return (
     <main className={styles.screen}>
-      <h1 className={styles.title}>{title}</h1>
-      <p>{purpose}</p>
+      <h1 className={styles.title}>{screen.title}</h1>
+      <p>{screen.purpose}</p>
       {children}
       {next.length > 0 ? (
-        <nav className={styles.next} aria-label="המשך">
+        <nav className={styles.next} aria-label={t.stub.next}>
           {next.map((link) => (
             <Link key={link.to} to={link.to} className={styles.nextLink}>
               {link.label}
@@ -49,7 +47,7 @@ export function ScreenStub({
       ) : null}
       <p className={styles.figma}>
         <a href={figmaUrl} target="_blank" rel="noreferrer">
-          הסקיצה ב-Figma
+          {t.stub.figma}
         </a>
       </p>
     </main>

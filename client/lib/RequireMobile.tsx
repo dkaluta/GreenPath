@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router";
 import { canNavigateHere } from "./device";
+import { t } from "./i18n";
 
 /**
  * Put routes inside this to allow them only on a phone:
@@ -16,12 +17,9 @@ export function RequireMobile() {
 
   return (
     <main>
-      <h1>הניווט זמין בטלפון</h1>
-      <p>
-        ניווט צעד אחר צעד עובד רק בטלפון. פתחו את המסלול הירוק בדפדפן של הטלפון
-        כדי לצאת לדרך.
-      </p>
-      <Link to="/">חזרה למפה</Link>
+      <h1>{t.mobileOnly.title}</h1>
+      <p>{t.mobileOnly.body}</p>
+      <Link to="/">{t.actions.backToMap}</Link>
     </main>
   );
 }

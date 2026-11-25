@@ -1,15 +1,15 @@
+import { t } from "../../lib/i18n";
 import { ScreenStub } from "../ScreenStub";
 
 /** Wireframe 100:297. A placeholder until the screen is built. */
 export default function SummaryPage() {
   return (
     <ScreenStub
-      title="הגעתם"
-      purpose="סיכום ההליכה: מרחק, צעדים, אחוז צל ועצים שאימתתם."
+      screen={t.screens.summary}
       figmaNode="100:297"
       next={[
-        { to: "/collection", label: "לאוסף שלי" },
-        { to: "/", label: "חזרה למפה" },
+        { to: "/collection", label: t.actions.myCollection },
+        { to: "/", label: t.actions.backToMap },
       ]}
     />
   );

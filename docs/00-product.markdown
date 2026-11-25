@@ -97,13 +97,21 @@ These are decisions, not suggestions. Code that breaks one is a bug.
   route guard is `<RequireMobile />`.
 - Planning (home, choosing a route) and the collection work everywhere.
 
-### Right-to-left languages are first class
+### Three languages, right to left first
 
-Hebrew is the default language, and Arabic must work just as well. Right to left
-is the normal case here, not an afterthought.
+The app speaks **Hebrew** (the default), **Arabic** and **English**. Right to
+left is the normal case here, not an afterthought, and Arabic must work as well
+as Hebrew.
 
-- `client/lib/config.ts` sets `LANG` and `DIRECTION` (`he`/`rtl` now). The
-  `<html lang dir>` in `client/index.html` must match.
+- Every word on the GreenPath screens lives in `client/lib/i18n/strings.ts`.
+  Hebrew is the source; Arabic and English must have the same keys, or
+  `npm run typecheck` fails. Read them with `t`:
+  `import { t } from "@/lib/i18n"`, then `t.nav.map`.
+- The language is picked once per page load in `client/lib/config.ts`: the
+  person's saved choice, else their browser's languages, else Hebrew. `LANG` and
+  `DIRECTION` follow from it, and `<html lang dir>` is set to match.
+- The switcher in the header saves the choice and reloads, so text, direction,
+  dates and the calendar all change together.
 - CSS uses logical properties only: `margin-inline-start`, `inset-inline-end`,
   `text-align: start`, never `left` or `right`. This is the rule in
   `client/styles/global.css`.
@@ -112,10 +120,23 @@ is the normal case here, not an afterthought.
   do not.
 - Numbers, distances and times use `Intl` with the current `LANG`, never
   hand-built strings.
-- Text from users (usernames, reports) can be in any script. Use `dir="auto"` on
-  it, and keep Hebrew, Arabic and Latin letters valid in usernames.
-- Both **Noto Sans Hebrew** and **Noto Sans Arabic** are loaded.
-- Check every screen in both directions with the switch on `/components`.
+- Text from users, such as reports, can be in any script: use `dir="auto"`.
+  Usernames are English words, so show them with `dir="ltr"`.
+- **Noto Sans Hebrew** and **Noto Sans Arabic** are both loaded.
+- Check every screen in all three languages. The starter kit's own pages
+  (sign-in, events, demos) are still in English only.
+
+### Phone and desktop layouts
+
+- **Phone** (the wireframes): the map fills the screen. Floating pill controls
+  sit on top, and everything else is a bottom sheet.
+- **Desktop**: laid out like Google Maps. A narrow rail on the start side (menu,
+  collection, recents), a floating search-and-results panel next to it, filter
+  chips along the top (shade, parks, water fountains, benches), and the map
+  controls (my location, zoom, layers) in the bottom corner. "Start" is the
+  right side in Hebrew and Arabic and the left in English, so the whole layout
+  mirrors.
+- Desktop is for exploring and planning; turn-by-turn stays on phones.
 
 ### Maps look like Apple Maps, in our colours
 

@@ -1,98 +1,124 @@
-# Product Jam Starter Kit
+# המסלול הירוק · المسار الأخضر · GreenPath
 
-The starting point for Product Jam projects. It is a web app you can log into,
-that stores data in a database and runs on the internet for free.
+Walk in the shade. GreenPath finds the shadiest walking route to where you are
+going, or takes you on a shaded walk of the length you choose. On the way it
+asks you to check the street trees you pass, which helps complete Israel's
+public street-tree database.
 
-New here? Start with
-**[docs/01-quickstart.markdown](docs/01-quickstart.markdown)**.
+It is built with [הסדנא לידע ציבורי](https://www.hasadna.org.il) (the Public
+Knowledge Workshop), on top of their **יער עירוני דיגיטלי** (Digital Urban
+Forest) database of street trees.
 
-## How the code is organised
+**Start with [the product doc](docs/00-product.markdown)**: the problem, the
+screens, the Figma links and the rules every change has to follow.
 
-There are three folders, and every file belongs to exactly one of them. Knowing
-which one you are in tells you what your code can do.
+## What it does
 
-| Folder    | Where it runs               | What it can do                                     |
-| --------- | --------------------------- | -------------------------------------------------- |
-| `client/` | In the visitor's browser    | Draw the screen. Cannot touch the database.        |
-| `server/` | On Cloudflare, in the cloud | Talk to the database. Holds the secret keys.       |
-| `shared/` | Both of the above           | Plain data rules that both sides have to agree on. |
+- **Navigate through the shade**: pick a destination and get routes ranked by
+  how much of the way is shaded.
+- **Free walks with tasks**: choose how far to walk, in steps, distance or time,
+  and stop along the way to photograph and check trees.
+- **A personal tree collection**: every tree type you check is added to your
+  collection.
 
-The browser never reads the database directly. It asks the server, at a URL
-starting with `/api/`, and the server answers.
+## Ground rules
 
-### The server runs on Cloudflare Workers
+These come from the product doc and apply to every change:
 
-It is not a normal Node.js server:
-
-- There is no file system, and packages with native modules don't work. That
-  means no `sharp`, `bcrypt` or `nodemailer`. Use libraries that work with
-  `fetch`, or an HTTP API.
-- Each request gets about 10ms of CPU. Waiting for the network is free; heavy
-  computation is not.
-- Nothing is kept in memory between requests. Anything you need later goes in
-  the database.
-
-### Before you add a library
-
-Ask first before adding a framework or a big library. That especially means
-Tailwind, Next.js, an ORM, a state or form library, CSS-in-JS or an i18n
-framework. The kit already has a way to do each of these.
+- **Hebrew, Arabic and English.** Hebrew is the default. Right to left comes
+  first, and every word on screen lives in `client/lib/i18n/strings.ts`.
+- **Pseudonymous.** People appear as three random English words, like
+  `gentle shady olive`. Never show a real name or an email.
+- **Passkeys** are the way to sign in (still to be built).
+- **Turn-by-turn navigation is phone only**: mobile web now, React Native later.
+  Desktop is for exploring and planning, laid out like Google Maps.
+- **The map looks like Apple Maps, in our colours**, light and dark.
 
 ## Getting started
 
-You need [Node.js](https://nodejs.org) version 24 or newer. Check with
-`node --version`.
+You need [Node.js](https://nodejs.org) 24 or newer.
 
 ```bash
-npm install          # download the libraries this project needs
-cp .env.example .env               # then fill it in
-npm run dev          # start the app
+npm install
 ```
 
-Then open **http://localhost:3000** in your browser.
+```bash
+cp .env.example .env
+```
 
-That file needs real values from Supabase before login will work - see
-[docs/02-supabase-setup.markdown](docs/02-supabase-setup.markdown).
+```bash
+npm run dev
+```
 
-## The commands
+Then open **http://localhost:3000**. Sign-in needs real Supabase values in
+`.env`; see [Supabase setup](docs/02-supabase-setup.markdown). Everything else
+works without them.
 
-| Command             | What it does                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| `npm run dev`       | Runs the app on your machine at http://localhost:3000, and reloads when you save a file. |
-| `npm run build`     | Packs the app up for the internet, into the `dist/` folder.                              |
-| `npm run preview`   | Builds, then runs the packed version. **Use this to check things before pushing.**       |
-| `npm run typecheck` | Checks that the types line up. Catches a lot of mistakes.                                |
-| `npm run lint`      | Looks for likely bugs and rule violations.                                               |
-| `npm run format`    | Tidies the spacing and punctuation of every file.                                        |
-| `npm test`          | Runs the tests.                                                                          |
+To try another language, use the switcher in the header. To see the phone-only
+screens on a computer, turn on the device toolbar in your browser's developer
+tools and pick a phone.
 
-## The component gallery
+## How the code is organised
 
-With the app running, open **http://localhost:3000/components**.
+| Folder      | Where it runs         | What it holds                                      |
+| ----------- | --------------------- | -------------------------------------------------- |
+| `client/`   | In the browser        | React screens, components, styles and translations |
+| `server/`   | On Cloudflare Workers | The Hono API. The only thing that talks to the DB  |
+| `shared/`   | Both                  | Zod schemas both sides agree on                    |
+| `supabase/` | Supabase              | Database migrations and seed data                  |
+| `docs/`     | -                     | The guides, numbered in reading order              |
 
-Every component is on that page, in each of its variants, with a switch to flip
-the whole thing between right-to-left and left-to-right. Look here before
-building any UI - there is probably already a component for it. It is also the
-quickest way to see what a change to `client/styles/tokens.css` does.
+The browser never reads the database directly. It asks the server, at a URL
+starting with `/api/`. The server runs on Cloudflare Workers, not Node: there is
+no file system, packages with native modules don't work, and each request gets
+about 10ms of CPU.
 
-## The demos
+Some places to know:
 
-**http://localhost:3000/demos** lists small, complete examples to copy from:
+- `client/lib/i18n/`: the languages and every word on screen
+- `client/lib/device.ts`: the phone-only rule for navigation
+- `client/styles/tokens.css`: the palette, type, shapes and map colours
+- `shared/schemas/profile.ts`: the username rule and generator
 
-- **HTML elements** - every plain HTML element, styled by
-  `client/styles/global.css`. Keep it open while you change the look.
-- **Data visualisation** - data from a public API, drawn as a chart.
+Ask before adding a framework or a big library, such as Tailwind, an ORM, a
+state or form library, CSS-in-JS or an i18n framework. The project already has a
+way to do each of these.
 
-Before handing the app over, hide the gallery and the demos by setting
-`VITE_SHOW_DEMOS=false` - see
+## Commands
+
+| Command             | What it does                                         |
+| ------------------- | ---------------------------------------------------- |
+| `npm run dev`       | Runs the app at http://localhost:3000, with reload   |
+| `npm run build`     | Builds the app into `dist/`                          |
+| `npm run preview`   | Builds, then serves the build. Use before pushing    |
+| `npm run deploy`    | Builds and deploys to Cloudflare                     |
+| `npm run typecheck` | Checks types, including that every language is whole |
+| `npm run lint`      | Looks for likely bugs and rule violations            |
+| `npm run format`    | Formats every file with Prettier                     |
+| `npm test`          | Runs the tests                                       |
+
+## Component gallery and demos
+
+With the app running, **http://localhost:3000/components** shows every component
+in each variant, with a right-to-left/left-to-right switch, and
+**http://localhost:3000/demos** has small examples to copy from. Hide both
+before launch with `VITE_SHOW_DEMOS=false`; see
 [Hide the demo pages](docs/04-deploy.markdown#hide-the-demo-pages).
 
 ## Documentation
 
-0. [The product](docs/00-product.markdown) - what GreenPath is, its screens and
+0. [The product](docs/00-product.markdown): what GreenPath is, its screens and
    its rules
-1. [Quickstart](docs/01-quickstart.markdown) - get it running on your machine
-2. [Supabase setup](docs/02-supabase-setup.markdown) - the database and login
-3. [Google sign-in](docs/03-google-sign-in.markdown) - "Sign in with Google"
-4. [Deploy](docs/04-deploy.markdown) - put it on the internet
-5. [Adding a feature](docs/05-adding-a-feature.markdown) - the pattern to copy
+1. [Quickstart](docs/01-quickstart.markdown): get it running on your machine
+2. [Supabase setup](docs/02-supabase-setup.markdown): the database and login
+3. [Google sign-in](docs/03-google-sign-in.markdown): "Sign in with Google"
+4. [Deploy](docs/04-deploy.markdown): put it on the internet
+5. [Adding a feature](docs/05-adding-a-feature.markdown): the pattern to copy
+
+## Design
+
+- Pitch deck: https://www.figma.com/slides/V67IqKiTX9WX28lc28SRoL
+- Design file and wireframes:
+  https://www.figma.com/design/0o5WXuCJZgpvKmoM8FypEF
+
+Built on the Product Jam starter kit.

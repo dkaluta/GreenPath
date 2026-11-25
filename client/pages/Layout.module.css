@@ -39,6 +39,35 @@
   gap: var(--space-4);
 }
 
+.languages {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.language {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-header-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.language:hover {
+  border-color: var(--color-header-text);
+}
+
+.language[aria-pressed="true"] {
+  background-color: var(--color-header-text);
+  color: var(--color-header-bg);
+}
+
+.language:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-header-text);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .footer {
   padding: var(--space-4);
   font-size: var(--text-sm);
