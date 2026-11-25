@@ -12,7 +12,8 @@ import {
 import { DIRECTION, LANG } from "../../lib/config";
 import { cx } from "../../lib/cx";
 import { t } from "../../lib/i18n";
-import { DARK_SCHEME_QUERY, readMapColors } from "./colors";
+import { currentTheme, subscribeTheme } from "../../lib/theme";
+import { readMapColors } from "./colors";
 import {
   linesToGeoJSON,
   markersToGeoJSON,
@@ -85,7 +86,7 @@ export type MapViewProps = {
  *     />
  *
  * Change `lines` or `markers` and the map redraws them; nothing else moves.
- * The style follows the --map-* tokens and the system dark mode, and the
+ * The style follows the --map-* tokens and the app's theme, and the
  * labels are in the app's language.
  */
 export function MapView({
@@ -187,19 +188,21 @@ export function MapView({
       latest.current.onMoveEnd?.([c.lng, c.lat], map.getZoom());
     });
 
-    // Light and dark: rebuild the style from the tokens, which tokens.css
-    // has already switched, then put our data back.
-    const scheme = window.matchMedia(DARK_SCHEME_QUERY);
-    const onSchemeChange = () => {
+    // Light and dark: when the theme changes (the menu's switch, or the
+    // computer under System), tokens.css has already switched the --map-*
+    // tokens. Rebuild the style from them, then put our data back.
+    let theme = currentTheme();
+    const stopFollowingTheme = subscribeTheme(() => {
+      if (currentTheme() === theme) return;
+      theme = currentTheme();
       map.setStyle(buildMapStyle({ colors: readMapColors(), lang: LANG }), {
         diff: true,
       });
       map.once("styledata", redraw);
-    };
-    scheme.addEventListener("change", onSchemeChange);
+    });
 
     return () => {
-      scheme.removeEventListener("change", onSchemeChange);
+      stopFollowingTheme();
       map.remove();
       mapRef.current = null;
     };

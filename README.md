@@ -55,9 +55,10 @@ Then open **http://localhost:3000**. Sign-in needs real Supabase values in
 `.env`; see [Supabase setup](docs/02-supabase-setup.markdown). Everything else
 works without them.
 
-To try another language, use the switcher in the header. To see the phone-only
-screens on a computer, turn on the device toolbar in your browser's developer
-tools and pick a phone.
+To try another language or the dark theme, open the app menu (the menu button on
+the desktop rail, the profile button on a phone). To see the phone-only screens
+on a computer, turn on the device toolbar in your browser's developer tools and
+pick a phone.
 
 ## How the code is organised
 

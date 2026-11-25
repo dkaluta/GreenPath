@@ -1,24 +1,14 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-6);
-  max-inline-size: var(--content-width-narrow);
-  padding-block: var(--space-8);
-}
+/* Inside <MapScreen>: a full page on phones, the floating panel on desktop. */
 
 .check {
   display: grid;
+  align-self: center;
+  margin-block: var(--space-2);
   place-items: center;
   inline-size: 6rem;
   block-size: 6rem;
   border-radius: var(--radius-full);
   background-color: color-mix(in oklab, var(--color-leaf), var(--color-surface) 55%);
-}
-
-.title {
-  font-size: var(--text-2xl);
-  font-weight: 700;
 }
 
 .empty {
@@ -65,7 +55,7 @@
   inline-size: 100%;
   padding: var(--space-4);
   border-radius: var(--radius-card);
-  background-color: var(--color-surface);
+  background-color: var(--color-bg);
 }
 
 .treeIcon {
@@ -75,7 +65,7 @@
   inline-size: 2.5rem;
   block-size: 2.5rem;
   border-radius: var(--radius-full);
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
 }
 
 .species {

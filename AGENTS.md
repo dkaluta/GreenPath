@@ -16,7 +16,10 @@ Workers, and Supabase for the database and login.
   - `features/<name>/` - the hooks and forms for one kind of data
   - `pages/<section>/` - the screens, one folder per URL section (`/events/*` is
     in `pages/events/`), routed in `App.tsx`. Pages use `export default`.
-  - `pages/Layout.tsx` - the header and footer around every page
+  - `pages/Layout.tsx` - `MapLayout` for the GreenPath screens (full screen, map
+    first), and the header and footer around the starter kit's own pages
+  - `features/map/MapScreen.tsx` - the frame every screen over the map uses: the
+    floating panel on desktop, a bottom sheet or page on phones
   - `lib/`, `styles/`
 - `server/` - the Hono app, which runs on Cloudflare Workers.
   - `routes/` - the API, registered in `server/index.ts`

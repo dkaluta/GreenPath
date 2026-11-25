@@ -74,6 +74,13 @@ export const MenuIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const MapIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z" />
+    <path d="M9 4v13M15 6.5v13" />
+  </Icon>
+);
+
 export const LeafIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15" />

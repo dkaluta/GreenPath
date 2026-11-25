@@ -114,8 +114,8 @@ as Hebrew.
 - The language is picked once per page load in `client/lib/config.ts`: the
   person's saved choice, else their browser's languages, else Hebrew. `LANG` and
   `DIRECTION` follow from it, and `<html lang dir>` is set to match.
-- The switcher in the header saves the choice and reloads, so text, direction,
-  dates and the calendar all change together.
+- The language choice in the app menu saves the choice and reloads, so text,
+  direction, dates and the calendar all change together.
 - CSS uses logical properties only: `margin-inline-start`, `inset-inline-end`,
   `text-align: start`, never `left` or `right`. This is the rule in
   `client/styles/global.css`.
@@ -141,6 +141,49 @@ as Hebrew.
   right side in Hebrew and Arabic and the left in English, so the whole layout
   mirrors.
 - Desktop is for exploring and planning; turn-by-turn stays on phones.
+- **Every screen lives in that frame.** The home screen builds it itself; every
+  other screen is a `<MapScreen>` (`client/features/map/MapScreen.tsx`), which
+  puts it over the map:
+  - **Desktop:** the same rail (menu, map, collection) and the screen in the
+    floating panel next to it, as Google Maps shows directions and place
+    details, with a back button and the title at its top and the location and
+    zoom buttons in the bottom end corner. Walk setup, route choice, summary,
+    collection, sign-in, "not found" and "continue on your phone" all open this
+    way.
+  - **Phone:** round back and menu buttons float over the full-screen map, and
+    the screen is a bottom sheet (walk setup, route choice, navigation, "not
+    found"), as in the wireframes. The screens the wireframes draw as a full
+    page (summary, match, collection, sign-in) are a full page with the same
+    back and menu buttons on top. The report and stop sheets rise over the map
+    too, and the camera stays a full-screen dark viewfinder.
+  - Route choice draws the routes on the map: the chosen one in its shaded
+    (green) and sunny stretches, the others faded; tapping one chooses it.
+    Navigation draws the chosen route the same way.
+- The rail, the app menu and the round map buttons are in
+  `client/features/map/chrome.tsx`. The app menu (the rail's menu button on
+  desktop, the profile button on phones) holds the pseudonymous username, the
+  collection, adding a passkey, the theme, the language and signing in or out.
+- The starter kit's own pages (`/design`, `/events`, `/demos`, `/components`)
+  keep a header and footer (`client/pages/Layout.tsx`), restyled as a floating
+  bar with the same app menu.
+
+### Light and dark
+
+- The app has a light and a dark theme, for the UI and the map together. The
+  setting is in the app menu: **System** (the default: follow the computer),
+  **Light** or **Dark**. It is kept on the device in `localStorage`
+  (`greenpath.theme`); nothing is sent anywhere.
+- `client/lib/theme.ts` turns the setting into `<html data-theme="light">` or
+  `"dark"` (and keeps it up to date when the computer switches, under System). A
+  small script in `client/index.html` does the same before the app loads, so a
+  dark page never flashes white.
+- `client/styles/tokens.css` holds every dark value under
+  `:root[data-theme="dark"]`: the UI colours (derived from the brand palette,
+  with text at WCAG AA contrast or better) and the `--map-*` tokens. The map
+  subscribes to the theme and rebuilds its style from the tokens, so choosing
+  Light gives a fully light app on a dark-mode computer, and the other way
+  round.
+- The camera screen is always dark, whatever the theme.
 
 ### Maps look like Apple Maps, in our colours
 
@@ -159,11 +202,11 @@ re-coloured with our palette:
 
 The values are the `--map-*` tokens in `client/styles/tokens.css`. The map style
 (`client/features/map/style.ts`) reads them while the app runs and rebuilds
-itself when the system switches between light and dark, so the map and the UI
-stay in the same palette. Labels are in the app's language where OpenStreetMap
-has the name in it (`name:he`, `name:ar`, `name:en`), else the local name.
-Points of interest stay few: trees, parks, water fountains and benches come
-before shops.
+itself when the app's theme switches between light and dark (see Light and dark
+above), so the map and the UI stay in the same palette. Labels are in the app's
+language where OpenStreetMap has the name in it (`name:he`, `name:ar`,
+`name:en`), else the local name. Points of interest stay few: trees, parks,
+water fountains and benches come before shops.
 
 ## Graphic language
 

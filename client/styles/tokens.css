@@ -15,8 +15,8 @@
 */
 
 :root {
-  /* Tell the browser this app is light-themed, so it does not dark-mode our
-     form controls and scrollbars on its own. */
+  /* Tell the browser which theme we are in, so its own form controls and
+     scrollbars match. The dark values are in the block at the end. */
   color-scheme: light;
 
   /* === COLOUR - the eight you change ==================================== */
@@ -54,7 +54,7 @@
   --map-location: var(--color-accent);
   --map-poi: #3f6b47; /* fountains and benches */
   /* client/features/map/colors.ts reads every --map-* token above at runtime
-     and rebuilds the map style when the colour scheme changes. */
+     and rebuilds the map style when the theme changes (client/lib/theme.ts). */
 
   /* === COLOUR - worked out from the eight above ========================= */
   /*
@@ -156,19 +156,57 @@
   --content-width-narrow: 34rem;
 }
 
-/* The map's dark version. Only the map goes dark for now; the rest of the
-   app stays light (see color-scheme above). */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --map-land: #2e3a3a;
-    --map-park: #2f5a45;
-    --map-water: #24406b;
-    --map-building: #354443;
-    --map-street: #4a5a5e;
-    --map-street-casing: #263030;
-    --map-label: #f5f5f5;
-    --map-label-park: #a9d3a9;
-    --map-location: #f1f58d;
-    --map-poi: #a9d3a9;
-  }
+/*
+  DARK
+  ====
+  The whole app, UI and map together. client/lib/theme.ts sets
+  <html data-theme="dark"> from the person's choice in the menu (System,
+  Light or Dark; System follows the computer), so this block is the only
+  place dark colours live. Only the eight base colours and a few derived
+  ones change; everything else is still worked out from them above.
+
+  Derived from the brand: a deep green-grey from the dark map's land, warm
+  off-white text from --color-bg, and the leaf green as the accent. Every
+  text colour here is at least 4.5:1 (WCAG AA) on --color-bg and on
+  --color-surface.
+*/
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #1a2120; /* deep green-grey, under the dark map's land */
+  --color-surface: #252e2d; /* panels, sheets and pills float above it */
+  --color-text: #f5f1ea; /* the brand's #F5F5F5, warmed toward the brown: 14:1 */
+  --color-text-muted: #c4b8a9; /* the brown, lightened: 8:1 on the surface */
+  --color-border: #3a4644;
+  /* The leaf green. Dark text on it (below) is 6.5:1, and as a link it is
+     5.5:1 on the surface. */
+  --color-accent: #80af80;
+  --color-danger: #ff8a80; /* 6:1 on the surface */
+  --color-success: #8fd19e;
+
+  --color-sky: #24406b; /* the dark map's water: notes with light text on it */
+  --color-text-on-accent: #1a2120;
+  --color-accent-hover: color-mix(in oklab, var(--color-accent), #fff 14%);
+  --color-accent-active: color-mix(in oklab, var(--color-accent), #fff 26%);
+  --color-danger-subtle: color-mix(in oklab, var(--color-danger), var(--color-surface) 85%);
+  --color-success-subtle: color-mix(in oklab, var(--color-success), var(--color-surface) 85%);
+  --color-header-bg: #2f5a45; /* the dark map's parks */
+  --color-header-text: var(--color-text);
+  --color-overlay: rgb(0 0 0 / 0.55);
+
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 2px 10px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.5);
+
+  /* The map's dark version. */
+  --map-land: #2e3a3a;
+  --map-park: #2f5a45;
+  --map-water: #24406b;
+  --map-building: #354443;
+  --map-street: #4a5a5e;
+  --map-street-casing: #263030;
+  --map-label: #f5f5f5;
+  --map-label-park: #a9d3a9;
+  --map-location: #f1f58d;
+  --map-poi: #a9d3a9;
 }

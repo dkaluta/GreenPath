@@ -15,8 +15,9 @@ import {
   formatShade,
   formatTrees,
 } from "../../features/routes/format";
+import { MapScreen, type LngLat, type MapMarker } from "../../features/map";
 import { useOrigin, useRoutes } from "../../features/routes/hooks";
-import { RouteSketch } from "../../features/routes/RouteSketch";
+import { routeLines } from "../../features/routes/lines";
 import styles from "../../features/routes/screen.module.css";
 import { ApiRequestError } from "../../lib/api";
 import { t } from "../../lib/i18n";
@@ -33,6 +34,10 @@ const EXAMPLE = "/route?from=32.0647,34.8074&to=32.0776,34.8142";
  *
  * Without `from`, the walk starts where the person is, or in the middle of
  * Givatayim when they are elsewhere.
+ *
+ * The routes are drawn on the map: the chosen one in shaded (green) and
+ * sunny stretches, the others faded; tapping one chooses it. The list is a
+ * bottom sheet on phones and the floating panel on desktop.
  */
 export default function RouteChoicePage() {
   const [params] = useSearchParams();
@@ -51,84 +56,94 @@ export default function RouteChoicePage() {
   }, [origin, walk, to]);
 
   const query = useRoutes(request);
-  const routes = query.data?.routes ?? [];
+  const routes = useMemo(() => query.data?.routes ?? [], [query.data]);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const selected = routes.find((r) => r.id === chosenId) ?? routes[0];
 
+  const lines = useMemo(() => routeLines(routes, selected), [routes, selected]);
+  const markers = useMemo<MapMarker[]>(() => {
+    const end = selected?.geometry.coordinates.at(-1);
+    return end ? [{ id: "end", position: end, kind: "destination" }] : [];
+  }, [selected]);
+  const fit = useMemo<LngLat[]>(
+    () => routes.flatMap((route) => route.geometry.coordinates),
+    [routes],
+  );
+
   return (
-    <main className={styles.screen}>
-      <div className={styles.map}>
-        {routes.length > 0 ? (
-          <RouteSketch routes={routes} selectedId={selected?.id} />
-        ) : null}
-      </div>
-
-      <section className={styles.sheet} aria-labelledby="route-title">
-        <h1 id="route-title" className={styles.title}>
-          {walk ? t.route.freeTitle : t.route.destinationTitle}
-        </h1>
-
-        {!wanted ? (
-          <>
-            <p className={styles.subtitle}>{t.route.noDestination}</p>
-            <Link to={EXAMPLE}>{t.route.example}</Link>
-          </>
-        ) : !origin ? (
-          <p className={styles.loading}>
-            <Spinner /> {t.route.locating}
+    <MapScreen
+      title={walk ? t.route.freeTitle : t.route.destinationTitle}
+      back={walk ? "/walk" : "/"}
+      expanded
+      lines={lines}
+      markers={markers}
+      fit={fit}
+      onLineClick={(id) => {
+        const route = routes.find((r) => id.startsWith(`${r.id}:`));
+        if (route) setChosenId(route.id);
+      }}
+    >
+      {!wanted ? (
+        <>
+          <p className={styles.subtitle}>{t.route.noDestination}</p>
+          <Link to={EXAMPLE}>{t.route.example}</Link>
+        </>
+      ) : !origin ? (
+        <p className={styles.loading}>
+          <Spinner /> {t.route.locating}
+        </p>
+      ) : query.isPending ? (
+        <p className={styles.loading}>
+          <Spinner /> {t.route.loading}
+        </p>
+      ) : query.isError ? (
+        isOutside(query.error) ? (
+          <p className={styles.error} role="alert">
+            {t.route.outsideArea}
           </p>
-        ) : query.isPending ? (
-          <p className={styles.loading}>
-            <Spinner /> {t.route.loading}
-          </p>
-        ) : query.isError ? (
-          isOutside(query.error) ? (
-            <p className={styles.error} role="alert">
-              {t.route.outsideArea}
-            </p>
-          ) : (
-            <>
-              <p className={styles.error} role="alert">
-                {t.route.error}
-              </p>
-              <Button variant="secondary" onClick={() => void query.refetch()}>
-                {t.route.retry}
-              </Button>
-            </>
-          )
         ) : (
           <>
-            {origin.fallback ? (
-              <p className={styles.note}>{t.route.pilotStart}</p>
-            ) : null}
-            <fieldset className={styles.options}>
-              <legend className={styles.visuallyHidden}>
-                {t.route.options}
-              </legend>
-              {routes.map((route, i) => (
-                <RouteOption
-                  key={route.id}
-                  route={route}
-                  index={i}
-                  checked={route === selected}
-                  onChoose={() => setChosenId(route.id)}
-                />
-              ))}
-            </fieldset>
-            <Button
-              size="lg"
-              className={styles.primary}
-              onClick={() =>
-                navigate("/navigate", { state: { route: selected } })
-              }
-            >
-              {t.route.go}
+            <p className={styles.error} role="alert">
+              {t.route.error}
+            </p>
+            <Button variant="secondary" onClick={() => void query.refetch()}>
+              {t.route.retry}
             </Button>
-            <p className={styles.credits}>{t.route.credits}</p>
           </>
-        )}
-      </section>
-    </main>
+        )
+      ) : (
+        <>
+          {/* TODO(cities): when routing covers more cities than Givatayim,
+          say here which city the walk is in (the other branch owns the
+          city data; keep this screen visual until it lands). */}
+          {origin.fallback ? (
+            <p className={styles.note}>{t.route.pilotStart}</p>
+          ) : null}
+          <fieldset className={styles.options}>
+            <legend className={styles.visuallyHidden}>{t.route.options}</legend>
+            {routes.map((route, i) => (
+              <RouteOption
+                key={route.id}
+                route={route}
+                index={i}
+                checked={route === selected}
+                onChoose={() => setChosenId(route.id)}
+              />
+            ))}
+          </fieldset>
+          <Button
+            size="lg"
+            className={styles.primary}
+            onClick={() =>
+              navigate("/navigate", { state: { route: selected } })
+            }
+          >
+            {t.route.go}
+          </Button>
+          <p className={styles.credits}>{t.route.credits}</p>
+        </>
+      )}
+    </MapScreen>
   );
 }
 

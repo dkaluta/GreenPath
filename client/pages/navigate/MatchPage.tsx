@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useToast } from "../../components";
 import { speciesName } from "../../features/collection/species";
+import { MapScreen } from "../../features/map";
 import actions from "../../features/verifications/actions.module.css";
 import { clearFlow, currentFlow } from "../../features/verifications/flow";
 import { useCreateVerification } from "../../features/verifications/hooks";
@@ -17,7 +18,7 @@ import styles from "./MatchPage.module.css";
 /**
  * Wireframe 100:275, "זה אותו עץ?": your photo next to how the expected
  * species usually looks, and yes / no / not sure. "Yes" adds the species
- * to the collection.
+ * to the collection. A full page, as in the wireframe.
  */
 export default function MatchPage() {
   const navigate = useNavigate();
@@ -63,30 +64,27 @@ export default function MatchPage() {
 
   if (!loading && !user) {
     return (
-      <main>
+      <MapScreen title={t.verify.match.title} back="/navigate">
         <SignInPrompt />
-      </main>
+      </MapScreen>
     );
   }
 
   if (!flow.treePhoto) {
     return (
-      <main className={styles.page}>
-        <h1 className={styles.title}>{t.verify.match.title}</h1>
+      <MapScreen title={t.verify.match.title} back="/navigate" phone="page">
         <p>{t.verify.match.noPhoto}</p>
         <Link to="/navigate/capture" className={actions.primary}>
           {t.verify.match.retake}
         </Link>
-      </main>
+      </MapScreen>
     );
   }
 
   const busy = verify.isPending;
 
   return (
-    <main className={styles.page}>
-      <h1 className={styles.title}>{t.verify.match.title}</h1>
-
+    <MapScreen title={t.verify.match.title} back="/navigate" phone="page">
       <figure className={styles.yours}>
         <TreePicture src={flow.treePhoto.url} alt="" size="lg" />
         <figcaption className={styles.label}>
@@ -138,6 +136,6 @@ export default function MatchPage() {
           </button>
         </div>
       </div>
-    </main>
+    </MapScreen>
   );
 }

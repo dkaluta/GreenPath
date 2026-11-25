@@ -1,0 +1,125 @@
+/*
+  The parts every map screen shares (chrome.tsx). Logical properties only,
+  so the whole frame mirrors between right-to-left and left-to-right.
+*/
+
+/* === RAIL (desktop) ===================================================== */
+
+.rail {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  inline-size: 4.5rem;
+  padding-block: var(--space-3);
+  border-inline-end: var(--border-width) solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.railButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  inline-size: 4rem;
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.railButton:hover {
+  background-color: var(--color-surface-hover);
+}
+
+/* The screen you are on, like Google Maps' rail. */
+.railButton[aria-current="page"] svg {
+  padding: 2px 10px;
+  box-sizing: content-box;
+  border-radius: var(--radius-pill);
+  background-color: color-mix(in oklab, var(--color-leaf) 35%, var(--color-surface));
+}
+
+/* === FLOATING BUTTONS =================================================== */
+
+.mapButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+}
+
+.mapButton:hover {
+  background-color: var(--color-surface-hover);
+}
+
+/* Location, zoom and the screen's extras: the bottom end corner. */
+.controls {
+  position: absolute;
+  inset-block-end: calc(var(--space-8) + var(--space-4));
+  inset-inline-end: var(--space-4);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.zoom {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-float);
+}
+
+.zoom .mapButton {
+  box-shadow: none;
+  background: none;
+}
+
+.zoom .mapButton + .mapButton {
+  border-block-start: var(--border-width) solid var(--color-border);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.zoom .mapButton:first-child {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+:where(.mapButton, .railButton):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* === MENU =============================================================== */
+
+/* The username (English words, isolated left to right inside). */
+.username {
+  padding-block: 0 var(--space-2);
+  padding-inline: var(--space-3);
+  font-weight: 700;
+}
+
+/* Arrows that point a way are mirrored in right-to-left languages. */
+.flipInRtl:dir(rtl) {
+  transform: scaleX(-1);
+}

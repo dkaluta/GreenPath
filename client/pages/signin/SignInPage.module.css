@@ -1,21 +1,4 @@
-.page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 100vh;
-  max-inline-size: var(--content-width-narrow);
-  margin-inline: auto;
-  padding: var(--space-4);
-}
-
-.card {
-  inline-size: 100%;
-}
-
-.title {
-  margin-block-end: var(--space-6);
-  text-align: center;
-}
+/* Inside <MapScreen>: the panel on desktop, a full page on phones. */
 
 .fullWidth {
   inline-size: 100%;

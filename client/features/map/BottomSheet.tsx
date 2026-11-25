@@ -13,6 +13,8 @@ export type BottomSheetProps = {
   onClose?: () => void;
   children: ReactNode;
   className?: string;
+  /** The heading level of the title: h1 when the sheet is the screen. */
+  heading?: "h1" | "h2";
 };
 
 /**
@@ -42,6 +44,7 @@ export function BottomSheet({
   onClose,
   children,
   className,
+  heading: Heading = "h2",
 }: BottomSheetProps) {
   const titleId = useId();
   const dragStart = useRef<number | null>(null);
@@ -85,9 +88,9 @@ export function BottomSheet({
         <span className={styles.grip} aria-hidden="true" />
       </button>
       <header className={styles.header}>
-        <h2 id={titleId} className={styles.title}>
+        <Heading id={titleId} className={styles.title}>
           {title}
-        </h2>
+        </Heading>
         {onClose ? (
           <button
             type="button"
