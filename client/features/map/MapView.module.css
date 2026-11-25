@@ -1,0 +1,16 @@
+.map {
+  position: absolute;
+  inset: 0;
+  background-color: var(--map-land);
+}
+
+/* MapLibre's own credit button, in our shapes. */
+.map :global(.maplibregl-ctrl-attrib) {
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+}
+
+.map :global(.maplibregl-ctrl-attrib.maplibregl-compact) {
+  background-color: color-mix(in srgb, var(--color-surface) 85%, transparent);
+}
