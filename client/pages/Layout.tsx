@@ -62,19 +62,26 @@ export function Layout() {
 }
 
 /**
- * A way out - or a way in, if nobody is logged in.
+ * A way out - or a way in, if nobody is signed in.
  *
- * Usernames are pseudonymous (docs/00-product.markdown): never show the email
- * here. The username comes with the profiles feature.
+ * Shows the pseudonymous username, never the email (docs/00-product.markdown).
+ * Usernames are English words, so they are always left to right.
  */
 function AuthAction() {
-  const { user, loading, signOut } = useAuth();
+  const { user, profile, loading, needsPasskey, signOut } = useAuth();
 
   if (loading) return null;
   if (!user) return <Link to="/signin">{t.nav.signIn}</Link>;
+  if (needsPasskey) return <Link to="/signin">{t.auth.finishSetup}</Link>;
 
   return (
     <>
+      {profile ? (
+        <>
+          {t.auth.signedInAs} <bdi dir="ltr">{profile.username}</bdi>
+          {" · "}
+        </>
+      ) : null}
       <button
         type="button"
         className={styles.linkButton}

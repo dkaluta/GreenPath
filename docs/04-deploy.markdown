@@ -135,9 +135,11 @@ In Supabase: **Authentication** → **URL Configuration**.
 
 Keep the localhost entry. You still need it to work on your own machine.
 
-If you set up Google sign-in, that is the only change needed - the Google Cloud
-Console redirect URI points at Supabase, not at your app, so it does not change.
-See [3. Sign in with Google](03-google-sign-in.markdown).
+Passkeys are tied to an address too. In **Authentication** → **Passkeys**, the
+**Relying Party ID** must be your deployed domain and **Relying Party Origins**
+must include `https://your-address.workers.dev`. Set the ID before anyone signs
+up: changing it later makes every passkey stop working. See
+[3. Passkey sign-in](03-passkeys.markdown).
 
 ## Keep the database awake
 

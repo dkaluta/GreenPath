@@ -4,7 +4,8 @@ import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config";
 /**
  * The Supabase client for the BROWSER.
  *
- * It is used for ONE thing: logging in and out, and knowing who is logged in.
+ * It is used for ONE thing: signing in and out (passkeys, and emailed codes
+ * for recovery), and knowing who is signed in.
  *
  * It is NOT used to read or write your data. Every table has Row Level
  * Security turned on with no policies, which makes the publishable key
@@ -35,9 +36,12 @@ export const supabase = createClient(
       // Keep the user logged in when they close the tab and come back.
       persistSession: true,
       autoRefreshToken: true,
-      // Finish the "Sign in with Google" round trip when the browser comes
-      // back to our site with a code in the URL.
-      detectSessionInUrl: true,
+      // Sign-in never leaves the page (passkeys and emailed codes), so
+      // there is no session to pick up from the URL.
+      detectSessionInUrl: false,
+      // Passkeys are still marked experimental in supabase-js. Without this
+      // flag, signInWithPasskey() and registerPasskey() throw.
+      experimental: { passkey: true },
     },
   },
 );

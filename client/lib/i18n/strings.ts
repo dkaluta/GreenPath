@@ -47,6 +47,70 @@ const he = {
     title: "הדף לא נמצא",
     body: "הכתובת שחיפשתם לא קיימת.",
   },
+  auth: {
+    loading: "רגע...",
+    title: "כניסה",
+    intro:
+      "נכנסים עם מפתח גישה (passkey): טביעת אצבע, זיהוי פנים או קוד המכשיר. בלי סיסמה.",
+    emailLabel: "אימייל",
+    emailHelp: "משמש רק לשחזור החשבון. לא מוצג לאף אחד.",
+    signIn: "כניסה עם מפתח גישה",
+    noAccount: "אין לכם חשבון?",
+    createAccount: "יצירת חשבון",
+    lostPasskey: "איבדתם את מפתח הגישה, או נכנסים ממכשיר חדש?",
+    recover: "שחזור עם קוד באימייל",
+    signUpTitle: "יצירת חשבון",
+    signUpIntro:
+      "נשלח קוד לאימייל שלכם. האימייל משמש רק לשחזור החשבון, ואף אחד לא יראה אותו.",
+    recoverTitle: "שחזור החשבון",
+    recoverIntro:
+      "נשלח קוד לאימייל של החשבון, ואז תיצרו מפתח גישה חדש במכשיר הזה.",
+    sendCode: "שליחת קוד",
+    codeTitle: "בדקו את האימייל",
+    codeSent: "אם יש חשבון עם הכתובת הזו, שלחנו אליה קוד. הקלידו אותו כאן.",
+    codeLabel: "הקוד מהאימייל",
+    verify: "אישור",
+    resend: "שליחה מחדש",
+    resent: "שלחנו קוד חדש.",
+    back: "חזרה",
+    usernameTitle: "זה השם שלכם",
+    usernameIntro:
+      "כך אחרים יראו אתכם באפליקציה. השם נבחר באקראי כדי לשמור על הפרטיות שלכם.",
+    usernameLabel: "שם המשתמש שלכם",
+    reroll: "שם אחר",
+    continue: "המשך",
+    passkeyTitle: "יצירת מפתח גישה",
+    passkeyIntro: "בפעם הבאה תיכנסו עם טביעת אצבע, זיהוי פנים או קוד המכשיר.",
+    createPasskey: "יצירת מפתח גישה",
+    finishSetup: "השלמת ההרשמה",
+    signedInAs: "מחוברים בתור",
+    notSetUpTitle: "Supabase עוד לא מוגדר",
+    notSetUpBody:
+      "העתיקו את .env.example ל-.env ומלאו את הערכים. ההוראות ב-docs/02-supabase-setup.markdown.",
+    support: {
+      unsupported:
+        "הדפדפן הזה לא תומך במפתחות גישה. נסו גרסה עדכנית של Chrome, Safari, Edge או Firefox.",
+      insecure:
+        "מפתחות גישה עובדים רק בחיבור מאובטח (https). פתחו את האתר בכתובת https.",
+    },
+    errors: {
+      cancelled: "הכניסה בוטלה או שעבר הזמן. נסו שוב.",
+      alreadyRegistered: "כבר יש מפתח גישה לחשבון הזה במכשיר הזה.",
+      unknownPasskey:
+        "מפתח הגישה הזה לא מוכר. אולי הוא נמחק? אפשר לשחזר את החשבון עם קוד באימייל.",
+      expired: "עבר יותר מדי זמן. נסו שוב.",
+      verificationFailed:
+        "לא הצלחנו לאמת את מפתח הגישה. נסו שוב, או נסו מנהל סיסמאות אחר.",
+      passkeysOff: "הכניסה עם מפתחות גישה כבויה כרגע.",
+      wrongSite: "מפתחות הגישה לא מוגדרים לכתובת הזו.",
+      badCode: "הקוד שגוי או שפג תוקפו. בקשו קוד חדש.",
+      badEmail: "כתובת האימייל לא תקינה.",
+      tooManyTries: "יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.",
+      wrongAccount:
+        "מפתח הגישה הזה שייך לחשבון אחר. בחרו את המפתח של האימייל שהקלדתם.",
+      generic: "משהו השתבש. נסו שוב.",
+    },
+  },
   screens: {
     home: {
       title: "בית",
@@ -131,6 +195,72 @@ const ar: Strings = {
   notFound: {
     title: "الصفحة غير موجودة",
     body: "العنوان الذي تبحثون عنه غير موجود.",
+  },
+  auth: {
+    loading: "لحظة...",
+    title: "تسجيل الدخول",
+    intro:
+      "ادخلوا بمفتاح مرور (passkey): بصمة الإصبع أو التعرّف على الوجه أو رمز الجهاز. بلا كلمة مرور.",
+    emailLabel: "البريد الإلكتروني",
+    emailHelp: "يُستخدم فقط لاستعادة الحساب. لا يظهر لأحد.",
+    signIn: "الدخول بمفتاح مرور",
+    noAccount: "ليس لديكم حساب؟",
+    createAccount: "إنشاء حساب",
+    lostPasskey: "فقدتم مفتاح المرور، أو تدخلون من جهاز جديد؟",
+    recover: "الاستعادة برمز عبر البريد",
+    signUpTitle: "إنشاء حساب",
+    signUpIntro:
+      "سنرسل رمزًا إلى بريدكم الإلكتروني. يُستخدم البريد فقط لاستعادة الحساب، ولن يراه أحد.",
+    recoverTitle: "استعادة الحساب",
+    recoverIntro:
+      "سنرسل رمزًا إلى بريد الحساب، ثم تنشئون مفتاح مرور جديدًا على هذا الجهاز.",
+    sendCode: "إرسال الرمز",
+    codeTitle: "تحقّقوا من بريدكم",
+    codeSent:
+      "إذا كان هناك حساب بهذا العنوان، فقد أرسلنا إليه رمزًا. اكتبوه هنا.",
+    codeLabel: "الرمز من البريد",
+    verify: "تأكيد",
+    resend: "إعادة الإرسال",
+    resent: "أرسلنا رمزًا جديدًا.",
+    back: "رجوع",
+    usernameTitle: "هذا اسمكم",
+    usernameIntro:
+      "هكذا سيراكم الآخرون في التطبيق. اخترنا الاسم عشوائيًا لحماية خصوصيتكم.",
+    usernameLabel: "اسم المستخدم",
+    reroll: "اسم آخر",
+    continue: "متابعة",
+    passkeyTitle: "إنشاء مفتاح مرور",
+    passkeyIntro:
+      "في المرة القادمة ستدخلون ببصمة الإصبع أو التعرّف على الوجه أو رمز الجهاز.",
+    createPasskey: "إنشاء مفتاح مرور",
+    finishSetup: "إكمال التسجيل",
+    signedInAs: "متصلون باسم",
+    notSetUpTitle: "لم يتم إعداد Supabase بعد",
+    notSetUpBody:
+      "انسخوا ‎.env.example‎ إلى ‎.env‎ واملؤوا القيم. التعليمات في docs/02-supabase-setup.markdown.",
+    support: {
+      unsupported:
+        "هذا المتصفح لا يدعم مفاتيح المرور. جرّبوا إصدارًا حديثًا من Chrome أو Safari أو Edge أو Firefox.",
+      insecure:
+        "تعمل مفاتيح المرور فقط عبر اتصال آمن (https). افتحوا الموقع بعنوان https.",
+    },
+    errors: {
+      cancelled: "أُلغي الدخول أو انتهى الوقت. حاولوا مرة أخرى.",
+      alreadyRegistered: "يوجد مفتاح مرور لهذا الحساب على هذا الجهاز بالفعل.",
+      unknownPasskey:
+        "مفتاح المرور هذا غير معروف. ربما حُذف؟ يمكنكم استعادة الحساب برمز عبر البريد.",
+      expired: "مرّ وقت طويل. حاولوا مرة أخرى.",
+      verificationFailed:
+        "لم نتمكن من التحقق من مفتاح المرور. حاولوا مرة أخرى، أو جرّبوا مدير كلمات مرور آخر.",
+      passkeysOff: "الدخول بمفاتيح المرور متوقف حاليًا.",
+      wrongSite: "مفاتيح المرور غير مُعدّة لهذا العنوان.",
+      badCode: "الرمز خاطئ أو انتهت صلاحيته. اطلبوا رمزًا جديدًا.",
+      badEmail: "عنوان البريد الإلكتروني غير صالح.",
+      tooManyTries: "محاولات كثيرة جدًا. انتظروا بضع دقائق ثم حاولوا مرة أخرى.",
+      wrongAccount:
+        "مفتاح المرور هذا يخص حسابًا آخر. اختاروا مفتاح البريد الذي كتبتموه.",
+      generic: "حدث خطأ ما. حاولوا مرة أخرى.",
+    },
   },
   screens: {
     home: {
@@ -220,6 +350,72 @@ const en: Strings = {
   notFound: {
     title: "Page not found",
     body: "The address you were looking for does not exist.",
+  },
+  auth: {
+    loading: "One moment...",
+    title: "Sign in",
+    intro:
+      "Sign in with a passkey: your fingerprint, face or device PIN. No password.",
+    emailLabel: "Email",
+    emailHelp: "Used only to recover your account. Never shown to anyone.",
+    signIn: "Sign in with a passkey",
+    noAccount: "No account yet?",
+    createAccount: "Create an account",
+    lostPasskey: "Lost your passkey, or on a new device?",
+    recover: "Recover with an email code",
+    signUpTitle: "Create an account",
+    signUpIntro:
+      "We'll send a code to your email. It is used only to recover your account, and nobody will see it.",
+    recoverTitle: "Recover your account",
+    recoverIntro:
+      "We'll send a code to the account's email, then you'll make a new passkey on this device.",
+    sendCode: "Send code",
+    codeTitle: "Check your email",
+    codeSent:
+      "If there is an account with that address, we sent it a code. Type it here.",
+    codeLabel: "Code from the email",
+    verify: "Confirm",
+    resend: "Send again",
+    resent: "We sent a new code.",
+    back: "Back",
+    usernameTitle: "This is your name",
+    usernameIntro:
+      "This is how others see you in the app. It is picked at random to keep you private.",
+    usernameLabel: "Your username",
+    reroll: "Another name",
+    continue: "Continue",
+    passkeyTitle: "Create a passkey",
+    passkeyIntro:
+      "Next time you'll sign in with your fingerprint, face or device PIN.",
+    createPasskey: "Create a passkey",
+    finishSetup: "Finish signing up",
+    signedInAs: "Signed in as",
+    notSetUpTitle: "Supabase is not set up yet",
+    notSetUpBody:
+      "Copy .env.example to .env and fill in the values. The instructions are in docs/02-supabase-setup.markdown.",
+    support: {
+      unsupported:
+        "This browser does not support passkeys. Try an up-to-date Chrome, Safari, Edge or Firefox.",
+      insecure:
+        "Passkeys only work over a secure (https) connection. Open the site at its https address.",
+    },
+    errors: {
+      cancelled: "Sign-in was cancelled or timed out. Try again.",
+      alreadyRegistered: "This device already has a passkey for this account.",
+      unknownPasskey:
+        "That passkey isn't recognised. Was it deleted? You can recover your account with an email code.",
+      expired: "That took too long. Try again.",
+      verificationFailed:
+        "We couldn't verify the passkey. Try again, or try a different password manager.",
+      passkeysOff: "Passkey sign-in is switched off right now.",
+      wrongSite: "Passkeys aren't set up for this address.",
+      badCode: "That code is wrong or has expired. Ask for a new one.",
+      badEmail: "That email address isn't valid.",
+      tooManyTries: "Too many tries. Wait a few minutes and try again.",
+      wrongAccount:
+        "That passkey belongs to a different account. Pick the one for the email you typed.",
+      generic: "Something went wrong. Try again.",
+    },
   },
   screens: {
     home: {

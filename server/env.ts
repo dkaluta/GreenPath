@@ -20,7 +20,11 @@ export type Bindings = {
 
 /** Things our own middleware adds to the request, for handlers to read. */
 export type Variables = {
-  user: { id: string; email: string };
+  /**
+   * The logged-in person. Only the id: the email stays inside Supabase Auth
+   * and is used only for account recovery, so no handler can leak it.
+   */
+  user: { id: string };
 };
 
 export type AppEnv = { Bindings: Bindings; Variables: Variables };

@@ -1,40 +1,78 @@
-import { useState, type FormEvent } from "react";
-import { Navigate, useLocation } from "react-router";
-import { Button, Card, Field, Input, Separator } from "../../components";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router";
+import { Button, Card, Field, Input, Spinner } from "../../components";
 import { useAuth } from "../../lib/auth";
 import { SUPABASE_ENABLED } from "../../lib/config";
+import { t } from "../../lib/i18n";
+import {
+  authErrorKind,
+  cleanCode,
+  isPlausibleCode,
+  passkeySupport,
+} from "../../lib/passkeys";
 import styles from "./SignInPage.module.css";
 
-/** The login screen. Two ways in: Google, or an email and password. */
-export default function SignInPage() {
-  const { user, signInWithPassword, signUpWithPassword, signInWithGoogle } =
-    useAuth();
-  const location = useLocation();
+/*
+ * Sign in and sign up, with passkeys. The steps:
+ *
+ *   signIn ─► (email + passkey) ─► done
+ *     ├─► email (sign up) ─► code ─► username ─► passkey ─► done
+ *     └─► email (recover) ─► code ───────────► passkey ─► done
+ *
+ * The email is only used for the code. It is never shown back on screen.
+ */
+type Step = "signIn" | "email" | "code" | "username" | "passkey";
+type Mode = "signUp" | "recover";
 
+// Read once: whether WebAuthn exists does not change while the page is open.
+const SUPPORT = passkeySupport();
+
+export default function SignInPage() {
+  const auth = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = (location.state as { from?: string } | null)?.from ?? "/";
+
+  const [step, setStep] = useState<Step>("signIn");
+  const [mode, setMode] = useState<Mode>("signUp");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (!SUPABASE_ENABLED) {
     return (
-      <main className={styles.page}>
-        <Card variant="raised" padding="lg">
-          <h1>Supabase is not set up yet</h1>
-          <p>
-            Copy <code>.env.example</code> to <code>.env</code> and fill in the
-            values. The instructions are in{" "}
-            <code>docs/02-supabase-setup.markdown</code>.
-          </p>
-        </Card>
-      </main>
+      <Frame title={t.auth.notSetUpTitle}>
+        <p dir="auto">{t.auth.notSetUpBody}</p>
+      </Frame>
     );
   }
 
-  if (user) {
-    const from = (location.state as { from?: string } | null)?.from;
-    return <Navigate to={from ?? "/"} replace />;
+  if (SUPPORT !== "supported") {
+    return (
+      <Frame title={t.auth.title}>
+        <p role="alert" className={styles.error}>
+          {t.auth.support[SUPPORT]}
+        </p>
+      </Frame>
+    );
+  }
+
+  if (auth.loading) {
+    return (
+      <Frame title={t.auth.title}>
+        <Spinner />
+      </Frame>
+    );
+  }
+
+  // Already signed in. Someone who has no passkey yet (they left half-way
+  // through signing up) goes straight to making one; everyone else moves on.
+  let current = step;
+  if (auth.user && (step === "signIn" || step === "email" || step === "code")) {
+    if (!auth.needsPasskey) return <Navigate to={from} replace />;
+    current = "passkey";
   }
 
   async function run(action: () => Promise<void>) {
@@ -44,64 +82,242 @@ export default function SignInPage() {
     try {
       await action();
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Something went wrong",
-      );
+      console.error(caught);
+      setError(t.auth.errors[authErrorKind(caught)]);
     } finally {
       setBusy(false);
     }
   }
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    void run(() => signInWithPassword(email, password));
+  function go(next: Step, nextMode: Mode = mode) {
+    setError(null);
+    setNotice(null);
+    setMode(nextMode);
+    setStep(next);
   }
 
-  return (
-    <main className={styles.page}>
-      <Card variant="raised" padding="lg">
-        <h1 className={styles.title}>Log In</h1>
+  function onSignIn(event: FormEvent) {
+    event.preventDefault();
+    void run(async () => {
+      await auth.signInWithPasskey(email);
+      navigate(from, { replace: true });
+    });
+  }
 
-        <Button
-          variant="secondary"
-          className={styles.fullWidth}
-          disabled={busy}
-          onClick={() => void run(signInWithGoogle)}
+  function onSendCode(event: FormEvent) {
+    event.preventDefault();
+    void run(async () => {
+      await auth.sendEmailCode(email, mode === "signUp");
+      setCode("");
+      setStep("code");
+    });
+  }
+
+  function onVerify(event: FormEvent) {
+    event.preventDefault();
+    void run(async () => {
+      await auth.verifyEmailCode(email, code);
+      setStep(mode === "signUp" ? "username" : "passkey");
+    });
+  }
+
+  const emailField = (
+    <Field label={t.auth.emailLabel} description={t.auth.emailHelp}>
+      <Input
+        type="email"
+        dir="ltr"
+        // "webauthn" lets the browser offer saved passkeys from this box.
+        autoComplete="email webauthn"
+        required
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+    </Field>
+  );
+
+  const messages = (
+    <>
+      {error ? (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      ) : null}
+      {notice ? (
+        <p role="status" className={styles.notice}>
+          {notice}
+        </p>
+      ) : null}
+    </>
+  );
+
+  switch (current) {
+    case "signIn":
+      return (
+        <Frame title={t.auth.title}>
+          <p className={styles.intro}>{t.auth.intro}</p>
+          <form onSubmit={onSignIn}>
+            {emailField}
+            <Button type="submit" loading={busy} className={styles.fullWidth}>
+              {t.auth.signIn}
+            </Button>
+          </form>
+          {messages}
+          <div className={styles.links}>
+            <p>
+              {t.auth.noAccount}{" "}
+              <button
+                type="button"
+                className={styles.link}
+                onClick={() => go("email", "signUp")}
+              >
+                {t.auth.createAccount}
+              </button>
+            </p>
+            <p>
+              {t.auth.lostPasskey}{" "}
+              <button
+                type="button"
+                className={styles.link}
+                onClick={() => go("email", "recover")}
+              >
+                {t.auth.recover}
+              </button>
+            </p>
+          </div>
+        </Frame>
+      );
+
+    case "email":
+      return (
+        <Frame
+          title={mode === "signUp" ? t.auth.signUpTitle : t.auth.recoverTitle}
         >
-          Continue with Google
-        </Button>
+          <p className={styles.intro}>
+            {mode === "signUp" ? t.auth.signUpIntro : t.auth.recoverIntro}
+          </p>
+          <form onSubmit={onSendCode}>
+            {emailField}
+            <div className={styles.actions}>
+              <Button type="submit" loading={busy} className={styles.grow}>
+                {t.auth.sendCode}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy}
+                onClick={() => go("signIn")}
+              >
+                {t.auth.back}
+              </Button>
+            </div>
+          </form>
+          {messages}
+        </Frame>
+      );
 
-        <div className={styles.divider}>
-          <Separator />
-          <span>or</span>
-          <Separator />
-        </div>
+    case "code":
+      return (
+        <Frame title={t.auth.codeTitle}>
+          <p className={styles.intro}>{t.auth.codeSent}</p>
+          <form onSubmit={onVerify}>
+            <Field label={t.auth.codeLabel}>
+              <Input
+                dir="ltr"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+                value={code}
+                onChange={(event) => setCode(cleanCode(event.target.value))}
+              />
+            </Field>
+            <div className={styles.actions}>
+              <Button
+                type="submit"
+                loading={busy}
+                disabled={!isPlausibleCode(code)}
+                className={styles.grow}
+              >
+                {t.auth.verify}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy}
+                onClick={() => go("email")}
+              >
+                {t.auth.back}
+              </Button>
+            </div>
+          </form>
+          <button
+            type="button"
+            className={styles.link}
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await auth.sendEmailCode(email, mode === "signUp");
+                setNotice(t.auth.resent);
+              })
+            }
+          >
+            {t.auth.resend}
+          </button>
+          {messages}
+        </Frame>
+      );
 
-        <form onSubmit={handleSubmit}>
-          <Field label="Email">
-            <Input
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </Field>
-
-          <Field label="Password" description="At least 6 characters">
-            <Input
-              type="password"
-              autoComplete="current-password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </Field>
-
+    case "username":
+      return (
+        <Frame title={t.auth.usernameTitle}>
+          <p className={styles.intro}>{t.auth.usernameIntro}</p>
+          <p
+            className={styles.username}
+            dir="ltr"
+            aria-label={t.auth.usernameLabel}
+            aria-live="polite"
+          >
+            {auth.profile?.username ?? <Spinner />}
+          </p>
           <div className={styles.actions}>
-            <Button type="submit" loading={busy} className={styles.grow}>
-              Log In
+            <Button
+              type="button"
+              variant="secondary"
+              loading={busy}
+              disabled={!auth.profile}
+              onClick={() => void run(auth.rerollUsername)}
+            >
+              {t.auth.reroll}
+            </Button>
+            <Button
+              type="button"
+              className={styles.grow}
+              disabled={busy || !auth.profile}
+              onClick={() => go("passkey")}
+            >
+              {t.auth.continue}
+            </Button>
+          </div>
+          {messages}
+        </Frame>
+      );
+
+    case "passkey":
+      return (
+        <Frame title={t.auth.passkeyTitle}>
+          <p className={styles.intro}>{t.auth.passkeyIntro}</p>
+          <div className={styles.actions}>
+            <Button
+              type="button"
+              className={styles.grow}
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  await auth.registerPasskey();
+                  navigate(from, { replace: true });
+                })
+              }
+            >
+              {t.auth.createPasskey}
             </Button>
             <Button
               type="button"
@@ -109,34 +325,26 @@ export default function SignInPage() {
               disabled={busy}
               onClick={() =>
                 void run(async () => {
-                  const needsConfirmation = await signUpWithPassword(
-                    email,
-                    password,
-                  );
-                  if (needsConfirmation) {
-                    setNotice(
-                      "We sent you an email to confirm your address. Click the link in it to finish signing up.",
-                    );
-                  }
+                  await auth.signOut();
+                  go("signIn");
                 })
               }
             >
-              Sign Up
+              {t.nav.signOut}
             </Button>
           </div>
-        </form>
+          {messages}
+        </Frame>
+      );
+  }
+}
 
-        {error ? (
-          <p role="alert" className={styles.error}>
-            {error}
-          </p>
-        ) : null}
-
-        {notice ? (
-          <p role="status" className={styles.notice}>
-            {notice}
-          </p>
-        ) : null}
+function Frame({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <main className={styles.page}>
+      <Card variant="raised" padding="lg" className={styles.card}>
+        <h1 className={styles.title}>{title}</h1>
+        {children}
       </Card>
     </main>
   );

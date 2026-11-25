@@ -81,11 +81,11 @@ function call(authorization?: string) {
 }
 
 describe("requireAuth", () => {
-  it("lets a valid token through, and says who it is", async () => {
+  it("lets a valid token through, and says who it is, without the email", async () => {
     const response = await call(`Bearer ${await signToken()}`);
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
-      user: { id: USER_ID, email: "test@example.com" },
+      user: { id: USER_ID },
     });
   });
 

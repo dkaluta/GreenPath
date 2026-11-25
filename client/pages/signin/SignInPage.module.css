@@ -8,6 +8,10 @@
   padding: var(--space-4);
 }
 
+.card {
+  inline-size: 100%;
+}
+
 .title {
   margin-block-end: var(--space-6);
   text-align: center;
@@ -17,24 +21,53 @@
   inline-size: 100%;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-block: var(--space-6);
-  font-size: var(--text-sm);
+.intro {
+  margin-block-end: var(--space-4);
   color: var(--color-text-muted);
-}
-
-.divider > :first-child,
-.divider > :last-child {
-  flex: 1;
-  margin-block: 0;
 }
 
 .actions {
   display: flex;
   gap: var(--space-2);
+}
+
+.links {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* The generated username: English words, so always left to right. */
+.username {
+  margin-block: var(--space-4) var(--space-6);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  text-align: center;
 }
 
 .grow {
