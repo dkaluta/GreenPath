@@ -1,6 +1,12 @@
 # AGENTS.md
 
-A starter web app for Product Jam: a React client, a Hono server on Cloudflare
+המסלול הירוק (GreenPath): a Hebrew, right-to-left web app for walking in the
+shade of street trees. Read [docs/00-product.markdown](docs/00-product.markdown)
+first: it has the screens, the Figma links and the product rules (pseudonymous
+usernames, passkey sign-in, turn-by-turn on phones only, first-class RTL for
+Hebrew and Arabic, the map style).
+
+Built on the Product Jam starter: a React client, a Hono server on Cloudflare
 Workers, and Supabase for the database and login.
 
 ## Folders
@@ -18,6 +24,9 @@ Workers, and Supabase for the database and login.
 - `shared/` - TypeScript imported by both the client and the server.
 - `supabase/` - database migrations and seed data.
 - `docs/` - the guides, numbered in reading order.
+
+Markdown files use the `.markdown` extension. Only files whose name a tool
+expects keep `.md`: `README.md`, `AGENTS.md`, `CLAUDE.md`.
 
 The server runs on Cloudflare Workers, not Node: there is no file system, and
 packages with native modules don't work.

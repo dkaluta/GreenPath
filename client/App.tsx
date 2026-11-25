@@ -5,11 +5,22 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { Spinner, ToastProvider, TooltipProvider } from "./components";
 import { AuthProvider, RequireAuth } from "./lib/auth";
 import { DIRECTION, SHOW_DEMOS } from "./lib/config";
+import { RequireMobile } from "./lib/RequireMobile";
 import { Layout } from "./pages/Layout";
 
 // One line per page. Each page is downloaded the first time someone visits
 // it, so adding pages never slows down the rest of the app.
 const HomePage = lazy(() => import("./pages/home/HomePage"));
+// The GreenPath screens, in the order of the flow. See docs/00-product.markdown.
+const WalkSetupPage = lazy(() => import("./pages/walk/WalkSetupPage"));
+const RouteChoicePage = lazy(() => import("./pages/route/RouteChoicePage"));
+const NavigatePage = lazy(() => import("./pages/navigate/NavigatePage"));
+const ReportPage = lazy(() => import("./pages/navigate/ReportPage"));
+const StopPage = lazy(() => import("./pages/navigate/StopPage"));
+const CapturePage = lazy(() => import("./pages/navigate/CapturePage"));
+const MatchPage = lazy(() => import("./pages/navigate/MatchPage"));
+const SummaryPage = lazy(() => import("./pages/summary/SummaryPage"));
+const CollectionPage = lazy(() => import("./pages/collection/CollectionPage"));
 const SignInPage = lazy(() => import("./pages/signin/SignInPage"));
 const AuthCallbackPage = lazy(() => import("./pages/auth/AuthCallbackPage"));
 const EventsPage = lazy(() => import("./pages/events/EventsPage"));
@@ -75,9 +86,31 @@ export function App() {
                     <Route element={<Layout />}>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/design" element={<DesignPage />} />
+                      <Route path="/walk" element={<WalkSetupPage />} />
+                      <Route path="/route" element={<RouteChoicePage />} />
+                      <Route path="/summary" element={<SummaryPage />} />
+
+                      {/* Turn-by-turn: phones only. See client/lib/device.ts. */}
+                      <Route element={<RequireMobile />}>
+                        <Route path="/navigate" element={<NavigatePage />} />
+                        <Route
+                          path="/navigate/report"
+                          element={<ReportPage />}
+                        />
+                        <Route path="/navigate/stop" element={<StopPage />} />
+                        <Route
+                          path="/navigate/capture"
+                          element={<CapturePage />}
+                        />
+                        <Route path="/navigate/match" element={<MatchPage />} />
+                      </Route>
 
                       {/* Everything in here needs a login. */}
                       <Route element={<RequireAuth />}>
+                        <Route
+                          path="/collection"
+                          element={<CollectionPage />}
+                        />
                         <Route path="/events" element={<EventsPage />} />
                         <Route path="/events/new" element={<EventNewPage />} />
                         <Route

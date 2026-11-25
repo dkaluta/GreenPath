@@ -35,7 +35,7 @@ function serverUrlFromEnv(supabaseUrl: string): Plugin {
         console.warn(
           "\nVITE_SUPABASE_URL is empty, so the built server has no " +
             "SUPABASE_URL.\nFill it in .env before deploying - see " +
-            "docs/04-deploy.md.\n",
+            "docs/04-deploy.markdown.\n",
         );
         return;
       }

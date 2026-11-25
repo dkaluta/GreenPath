@@ -68,8 +68,8 @@ go to Google, pick an account, and land back on your home page logged in.
 | `Access blocked: … has not completed verification`  | The app is still in Testing. Publish it (step 6), or add yourself as a test user.                                |
 | `Unsupported provider` or `provider is not enabled` | Google is not switched on in Supabase, or the save did not take.                                                 |
 | Login works, but you land on the wrong site         | URL 2 or 3. Supabase falls back to the Site URL when the address you asked for is not in the Redirect URLs list. |
-| Works locally, fails once deployed                  | You never added the deployed address to URLs 2 and 3. See [4. Deploy](04-deploy.md).                             |
+| Works locally, fails once deployed                  | You never added the deployed address to URLs 2 and 3. See [4. Deploy](04-deploy.markdown).                       |
 
 ## Next
 
-[4. Putting it on the internet](04-deploy.md).
+[4. Putting it on the internet](04-deploy.markdown).

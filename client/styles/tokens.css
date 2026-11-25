@@ -23,12 +23,32 @@
 
   --color-bg: #f5f5f5; /* the page behind everything */
   --color-surface: #ffffff; /* cards, inputs, menus - things ON the page */
-  --color-text: #2b2d42;
-  --color-text-muted: #5a5e6b; /* captions, placeholders, secondary labels */
-  --color-border: #bfc6d2;
-  --color-accent: #535bf2; /* buttons, links, focus rings. Change this first */
+  --color-text: #584533; /* the brand brown */
+  --color-text-muted: #7a6a5c; /* captions, placeholders, secondary labels */
+  --color-border: #e4e4e4;
+  /* Buttons, links, focus rings. The wireframes' primary button is solid dark;
+     the brand's dark is the brown, which keeps white text readable. */
+  --color-accent: #584533;
   --color-danger: #c0362c; /* destructive actions and error messages */
   --color-success: #1f7a4d; /* confirmations */
+
+  /* === COLOUR - GreenPath brand ========================================= */
+  /* From the "שפה גרפית" slide. See docs/00-product.markdown. */
+  --color-leaf: #80af80; /* brand green: shaded streets, the header bar */
+  --color-sky: #d9e7ff; /* water, light highlights */
+  --color-sun: #f1f58d; /* the yellow blob behind headings */
+
+  /* === COLOUR - the map ================================================ */
+  /* Apple Maps-like, in our palette. The map style reads these, so the map
+     and the UI never drift apart. Dark values are in the block at the end. */
+  --map-land: #f3f0e8;
+  --map-park: var(--color-leaf);
+  --map-water: var(--color-sky);
+  --map-street: #ffffff;
+  --map-street-casing: #e2ddd2;
+  --map-shade: var(--color-leaf); /* the shaded-street line on top of streets */
+  --map-label: var(--color-text);
+  --map-location: var(--color-accent);
 
   /* === COLOUR - worked out from the eight above ========================= */
   /*
@@ -54,8 +74,8 @@
   --color-success-subtle: color-mix(in oklab, var(--color-success), var(--color-surface) 92%);
 
   /* The bar across the top of every page: the text colour, inverted. */
-  --color-header-bg: var(--color-text);
-  --color-header-text: var(--color-bg);
+  --color-header-bg: var(--color-leaf);
+  --color-header-text: var(--color-text);
 
   /* The dim layer behind a dialog. */
   --color-overlay: color-mix(in srgb, var(--color-text) 45%, transparent);
@@ -74,6 +94,9 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-full: 9999px;
+  /* Buttons, search bar and toggles in the wireframes are full pills. */
+  --radius-pill: var(--radius-full);
+  --radius-card: 1.125rem; /* 18px: route options and sheets */
 
   --border-width: 1px;
 
@@ -89,11 +112,11 @@
     Hebrew and Arabic. Do not remove them.
   */
   --font-body:
-    system-ui, -apple-system, "Segoe UI", "Noto Sans Hebrew", "Noto Sans Arabic", "Arial Hebrew",
+    "Noto Sans Hebrew", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", "Arial Hebrew",
     "Geeza Pro", sans-serif;
-  /* Headings. Rubik is loaded from Google Fonts in client/index.html - if you
-     change it here, change that link too. */
-  --font-titles: "Rubik", var(--font-body);
+  /* Noto Sans Hebrew is loaded from Google Fonts in client/index.html - if you
+     change it here, change that link too. Headings use the same family. */
+  --font-titles: var(--font-body);
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --text-xs: 0.75rem;
@@ -106,6 +129,8 @@
 
   /* === ELEVATION ======================================================== */
   --shadow-md: 0 2px 4px rgb(27 28 31 / 0.06), 0 4px 12px rgb(27 28 31 / 0.08);
+  /* Controls floating over the map: search bar, mode toggle, profile. */
+  --shadow-float: 0 2px 10px rgb(0 0 0 / 0.08);
   --shadow-lg: 0 4px 8px rgb(27 28 31 / 0.06), 0 12px 32px rgb(27 28 31 / 0.12);
 
   /* === LAYERS =========================================================== */
@@ -123,4 +148,17 @@
   /* === LAYOUT =========================================================== */
   --content-width: 60rem;
   --content-width-narrow: 34rem;
+}
+
+/* The map's dark version. Only the map goes dark for now; the rest of the
+   app stays light (see color-scheme above). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --map-land: #2e3a3a;
+    --map-park: #2f5a45;
+    --map-water: #24406b;
+    --map-street: #4a5a5e;
+    --map-street-casing: #263030;
+    --map-label: #f5f5f5;
+  }
 }

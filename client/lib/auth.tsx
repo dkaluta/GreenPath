@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           provider: "google",
           // Where Google sends the browser back to. This exact URL must also
           // be listed in Supabase -> Authentication -> URL Configuration.
-          // See docs/03-google-sign-in.md.
+          // See docs/03-google-sign-in.markdown.
           options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw new Error(error.message);

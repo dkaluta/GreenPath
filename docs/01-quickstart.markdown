@@ -98,4 +98,5 @@ page 2 it will say `{ "ok": true, "database": "ok" }`.
 
 ## Next
 
-[2. Setting up Supabase](02-supabase-setup.md) - the database and logging in.
+[2. Setting up Supabase](02-supabase-setup.markdown) - the database and logging
+in.

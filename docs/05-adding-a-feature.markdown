@@ -43,8 +43,8 @@ Before you write it, decide:
   index.
 
 Every table has Row Level Security turned on, with no policies. See
-[About Row Level Security](02-supabase-setup.md#about-row-level-security) for
-why.
+[About Row Level Security](02-supabase-setup.markdown#about-row-level-security)
+for why.
 
 ## 2. What counts as valid
 

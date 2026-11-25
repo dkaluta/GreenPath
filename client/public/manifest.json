@@ -1,6 +1,6 @@
 {
-  "name": "Product Jam App",
-  "short_name": "Jam App",
+  "name": "המסלול הירוק",
+  "short_name": "המסלול הירוק",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -10,6 +10,8 @@
     }
   ],
   "display": "standalone",
-  "theme_color": "#2b2d42",
-  "background_color": "#f5f5f5"
+  "theme_color": "#80af80",
+  "background_color": "#f5f5f5",
+  "lang": "he",
+  "dir": "rtl"
 }

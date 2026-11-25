@@ -14,10 +14,10 @@
  */
 
 /** Text direction for the whole app. Change this and LANG together. */
-export const DIRECTION: "rtl" | "ltr" = "ltr";
+export const DIRECTION: "rtl" | "ltr" = "rtl";
 
 /** Language code for the whole app. Must match the `lang` in client/index.html. */
-export const LANG = "en";
+export const LANG = "he";
 
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
 export const SUPABASE_PUBLISHABLE_KEY =
@@ -38,7 +38,7 @@ export const SUPABASE_ENABLED = Boolean(
 export const SHOW_DEMOS = import.meta.env.VITE_SHOW_DEMOS !== "false";
 
 /** Shown in the header bar and anywhere else the app names itself. */
-export const APP_NAME = "Starter Kit";
+export const APP_NAME = "המסלול הירוק";
 
 /** The links and credits in the header and footer. Change them to your own. */
 export const COURSE_GITHUB = "https://github.com/product-jam-2027";

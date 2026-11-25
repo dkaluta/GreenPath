@@ -13,7 +13,7 @@ import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config";
  *     import { api } from "./api";
  *     const events = await api("/api/events");
  *
- * See "About Row Level Security" in docs/02-supabase-setup.md for why.
+ * See "About Row Level Security" in docs/02-supabase-setup.markdown for why.
  */
 /*
  * The two fallbacks below matter more than they look.

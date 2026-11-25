@@ -1,5 +1,5 @@
 -- The example resource. Copy this file's shape when you add your own.
--- See docs/05-adding-a-feature.md.
+-- See docs/05-adding-a-feature.markdown.
 
 create table if not exists public.events (
   id uuid primary key default gen_random_uuid(),
@@ -33,6 +33,6 @@ create index if not exists events_owner_id_starts_at_idx
 -- bypasses RLS.
 --
 -- Do not add policies here. Decide who can see what in server/routes/, where
--- you can read the code and test it. See docs/02-supabase-setup.md.
+-- you can read the code and test it. See docs/02-supabase-setup.markdown.
 -- ---------------------------------------------------------------------------
 alter table public.events enable row level security;

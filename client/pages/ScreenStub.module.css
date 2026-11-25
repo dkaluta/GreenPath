@@ -1,0 +1,44 @@
+.screen {
+  max-width: var(--content-width-narrow);
+}
+
+/* The yellow blob behind headings, from the graphic language. */
+.title {
+  display: inline-block;
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-sun);
+}
+
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block: var(--space-6);
+}
+
+.nextLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 3.5rem;
+  padding-inline: var(--space-6);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.nextLink:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.nextLink:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.figma {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

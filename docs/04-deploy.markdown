@@ -137,7 +137,7 @@ Keep the localhost entry. You still need it to work on your own machine.
 
 If you set up Google sign-in, that is the only change needed - the Google Cloud
 Console redirect URI points at Supabase, not at your app, so it does not change.
-See [3. Sign in with Google](03-google-sign-in.md).
+See [3. Sign in with Google](03-google-sign-in.markdown).
 
 ## Keep the database awake
 
@@ -201,5 +201,5 @@ errors.
 
 ## Next
 
-[5. Adding a feature](05-adding-a-feature.md) - the pattern to copy when you
-start building.
+[5. Adding a feature](05-adding-a-feature.markdown) - the pattern to copy when
+you start building.

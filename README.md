@@ -3,7 +3,8 @@
 The starting point for Product Jam projects. It is a web app you can log into,
 that stores data in a database and runs on the internet for free.
 
-New here? Start with **[docs/01-quickstart.md](docs/01-quickstart.md)**.
+New here? Start with
+**[docs/01-quickstart.markdown](docs/01-quickstart.markdown)**.
 
 ## How the code is organised
 
@@ -51,7 +52,7 @@ npm run dev          # start the app
 Then open **http://localhost:3000** in your browser.
 
 That file needs real values from Supabase before login will work - see
-[docs/02-supabase-setup.md](docs/02-supabase-setup.md).
+[docs/02-supabase-setup.markdown](docs/02-supabase-setup.markdown).
 
 ## The commands
 
@@ -84,12 +85,14 @@ quickest way to see what a change to `client/styles/tokens.css` does.
 
 Before handing the app over, hide the gallery and the demos by setting
 `VITE_SHOW_DEMOS=false` - see
-[Hide the demo pages](docs/04-deploy.md#hide-the-demo-pages).
+[Hide the demo pages](docs/04-deploy.markdown#hide-the-demo-pages).
 
 ## Documentation
 
-1. [Quickstart](docs/01-quickstart.md) - get it running on your machine
-2. [Supabase setup](docs/02-supabase-setup.md) - the database and login
-3. [Google sign-in](docs/03-google-sign-in.md) - "Sign in with Google"
-4. [Deploy](docs/04-deploy.md) - put it on the internet
-5. [Adding a feature](docs/05-adding-a-feature.md) - the pattern to copy
+0. [The product](docs/00-product.markdown) - what GreenPath is, its screens and
+   its rules
+1. [Quickstart](docs/01-quickstart.markdown) - get it running on your machine
+2. [Supabase setup](docs/02-supabase-setup.markdown) - the database and login
+3. [Google sign-in](docs/03-google-sign-in.markdown) - "Sign in with Google"
+4. [Deploy](docs/04-deploy.markdown) - put it on the internet
+5. [Adding a feature](docs/05-adding-a-feature.markdown) - the pattern to copy

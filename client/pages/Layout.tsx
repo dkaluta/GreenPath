@@ -31,7 +31,8 @@ export function Layout() {
           {APP_NAME}
         </Link>
         <nav className={styles.nav}>
-          <Link to="/">Home</Link>
+          <Link to="/">מפה</Link>
+          <Link to="/collection">האוסף שלי</Link>
           <a href={COURSE_GITHUB} target="_blank" rel="noreferrer">
             GitHub
           </a>
@@ -53,7 +54,7 @@ export function Layout() {
       </div>
 
       <footer className={styles.footer}>
-        <p>This is some example footer content.</p>
+        <p>בשיתוף הסדנא לידע ציבורי ויער עירוני דיגיטלי</p>
         <p>
           <AuthAction /> | {COURSE_CREDITS}
         </p>
@@ -62,22 +63,26 @@ export function Layout() {
   );
 }
 
-/** "hey, you" and a way out - or a way in, if nobody is logged in. */
+/**
+ * A way out - or a way in, if nobody is logged in.
+ *
+ * Usernames are pseudonymous (docs/00-product.markdown): never show the email
+ * here. The username comes with the profiles feature.
+ */
 function AuthAction() {
   const { user, loading, signOut } = useAuth();
 
   if (loading) return null;
-  if (!user) return <Link to="/signin">Log In</Link>;
+  if (!user) return <Link to="/signin">כניסה</Link>;
 
   return (
     <>
-      hey {user.email} :){" "}
       <button
         type="button"
         className={styles.linkButton}
         onClick={() => void signOut()}
       >
-        Log Out
+        יציאה
       </button>
     </>
   );

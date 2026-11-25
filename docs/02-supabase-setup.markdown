@@ -140,7 +140,7 @@ your own server, which holds the secret key.
 
 **Do not add policies.** Decide who can see what in `server/routes/`, where you
 can read the code, test it, and explain it. See
-[Adding a feature](05-adding-a-feature.md) for how.
+[Adding a feature](05-adding-a-feature.markdown) for how.
 
 ## Optional: sample data
 
@@ -150,4 +150,4 @@ and press Run. Entirely optional.
 
 ## Next
 
-[3. Sign in with Google](03-google-sign-in.md).
+[3. Sign in with Google](03-google-sign-in.markdown).

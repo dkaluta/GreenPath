@@ -25,7 +25,7 @@ export default function SignInPage() {
           <p>
             Copy <code>.env.example</code> to <code>.env</code> and fill in the
             values. The instructions are in{" "}
-            <code>docs/02-supabase-setup.md</code>.
+            <code>docs/02-supabase-setup.markdown</code>.
           </p>
         </Card>
       </main>

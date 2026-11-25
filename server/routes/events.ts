@@ -12,7 +12,7 @@ import { createAdminClient } from "../lib/supabase";
 
 /*
  * The example resource. Every other resource in your app should look like
- * this one. See docs/05-adding-a-feature.md.
+ * this one. See docs/05-adding-a-feature.markdown.
  *
  * Five routes, and one rule running through all of them: an event belongs to
  * the person who made it, so every query is filtered by `c.get("user").id`.
