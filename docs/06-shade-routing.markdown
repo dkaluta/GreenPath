@@ -185,7 +185,7 @@ origin against its quadkey so the pixels line up, and caches the window in
   (15,335 trees in and just around Givatayim, 202 KB gzipped), with a one-hour
   cache header. No database is needed.
 - The same trees go in a `trees` table
-  (`supabase/migrations/20261125120000_trees.sql`, filled by running
+  (`supabase/migrations/20261125130000_trees.sql`, filled by running
   `supabase/seed-trees.sql`), so reports and verifications can refer to a tree
   by its יע"ד id.
 
