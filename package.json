@@ -65,5 +65,10 @@
         }
       }
     ]
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260921.1": true,
+    "fsevents@2.3.3": true
   }
 }
