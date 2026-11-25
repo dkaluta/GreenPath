@@ -44,11 +44,17 @@
   --map-land: #f3f0e8;
   --map-park: var(--color-leaf);
   --map-water: var(--color-sky);
+  --map-building: #e7e2d7;
   --map-street: #ffffff;
   --map-street-casing: #e2ddd2;
   --map-shade: var(--color-leaf); /* the shaded-street line on top of streets */
+  --map-sun: #d9a441; /* a sunny stretch of a route: darker than --color-sun, to show on land */
   --map-label: var(--color-text);
+  --map-label-park: #3f6b47; /* park and water names: green text reads on the pale fills */
   --map-location: var(--color-accent);
+  --map-poi: #3f6b47; /* fountains and benches */
+  /* client/features/map/colors.ts reads every --map-* token above at runtime
+     and rebuilds the map style when the colour scheme changes. */
 
   /* === COLOUR - worked out from the eight above ========================= */
   /*
@@ -157,8 +163,12 @@
     --map-land: #2e3a3a;
     --map-park: #2f5a45;
     --map-water: #24406b;
+    --map-building: #354443;
     --map-street: #4a5a5e;
     --map-street-casing: #263030;
     --map-label: #f5f5f5;
+    --map-label-park: #a9d3a9;
+    --map-location: #f1f58d;
+    --map-poi: #a9d3a9;
   }
 }

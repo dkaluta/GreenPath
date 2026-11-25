@@ -47,6 +47,40 @@ const he = {
     title: "הדף לא נמצא",
     body: "הכתובת שחיפשתם לא קיימת.",
   },
+  map: {
+    label: "מפת הרחובות המוצלים",
+    attribution: "קרדיט למפה",
+    zoomIn: "התקרבות",
+    zoomOut: "התרחקות",
+    myLocation: "המיקום שלי",
+    locationDenied: "אין הרשאה למיקום. אפשרו אותה בהגדרות הדפדפן.",
+    locationUnavailable: "לא הצלחנו למצוא את המיקום שלכם.",
+    layers: "שכבות",
+    filtersLabel: "מה להראות במפה",
+    filters: {
+      shade: "צל",
+      parks: "פארקים",
+      fountains: "ברזיות",
+      benches: "ספסלים",
+    },
+    legendShade: "רחוב מוצל",
+    sheetExpand: "הרחבה",
+    sheetCollapse: "צמצום",
+    sheetClose: "סגירה",
+  },
+  home: {
+    searchLabel: "חיפוש יעד",
+    searchPlaceholder: "לאן?",
+    search: "חיפוש",
+    profile: "פרופיל ותפריט",
+    mode: "סוג ההליכה",
+    menu: "תפריט",
+    recents: "אחרונים",
+    recentsEmpty: "עוד לא חיפשתם יעדים.",
+    destinationHint: "חפשו כתובת או מקום, ונמצא את הדרך המוצלת ביותר.",
+    freeWalkHint: "בוחרים כמה ללכת, ומקבלים מסלול מוצל עם משימות בדרך.",
+    freeWalkStart: "הגדרת הליכה",
+  },
   screens: {
     home: {
       title: "בית",
@@ -131,6 +165,42 @@ const ar: Strings = {
   notFound: {
     title: "الصفحة غير موجودة",
     body: "العنوان الذي تبحثون عنه غير موجود.",
+  },
+  map: {
+    label: "خريطة الشوارع المظللة",
+    attribution: "مصادر الخريطة",
+    zoomIn: "تكبير",
+    zoomOut: "تصغير",
+    myLocation: "موقعي",
+    locationDenied:
+      "لا يوجد إذن بالوصول إلى الموقع. فعّلوه في إعدادات المتصفح.",
+    locationUnavailable: "لم نتمكن من تحديد موقعكم.",
+    layers: "الطبقات",
+    filtersLabel: "ما يظهر على الخريطة",
+    filters: {
+      shade: "الظل",
+      parks: "الحدائق",
+      fountains: "برّادات الماء",
+      benches: "المقاعد",
+    },
+    legendShade: "شارع مظلل",
+    sheetExpand: "توسيع",
+    sheetCollapse: "تصغير",
+    sheetClose: "إغلاق",
+  },
+  home: {
+    searchLabel: "البحث عن وجهة",
+    searchPlaceholder: "إلى أين؟",
+    search: "بحث",
+    profile: "الملف الشخصي والقائمة",
+    mode: "نوع المشي",
+    menu: "القائمة",
+    recents: "الأخيرة",
+    recentsEmpty: "لم تبحثوا عن وجهات بعد.",
+    destinationHint: "ابحثوا عن عنوان أو مكان، وسنجد الطريق الأكثر ظلًا.",
+    freeWalkHint:
+      "اختاروا كم تريدون أن تمشوا، واحصلوا على مسار مظلل مع مهام على الطريق.",
+    freeWalkStart: "إعداد النزهة",
   },
   screens: {
     home: {
@@ -220,6 +290,43 @@ const en: Strings = {
   notFound: {
     title: "Page not found",
     body: "The address you were looking for does not exist.",
+  },
+  map: {
+    label: "Map of shaded streets",
+    attribution: "Map credits",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    myLocation: "My location",
+    locationDenied:
+      "Location is turned off for this site. Allow it in your browser settings.",
+    locationUnavailable: "We could not find your location.",
+    layers: "Layers",
+    filtersLabel: "What to show on the map",
+    filters: {
+      shade: "Shade",
+      parks: "Parks",
+      fountains: "Water fountains",
+      benches: "Benches",
+    },
+    legendShade: "Shaded street",
+    sheetExpand: "Expand",
+    sheetCollapse: "Collapse",
+    sheetClose: "Close",
+  },
+  home: {
+    searchLabel: "Search for a destination",
+    searchPlaceholder: "Where to?",
+    search: "Search",
+    profile: "Profile and menu",
+    mode: "Kind of walk",
+    menu: "Menu",
+    recents: "Recents",
+    recentsEmpty: "You have not searched for anywhere yet.",
+    destinationHint:
+      "Search for an address or a place, and we will find the shadiest way there.",
+    freeWalkHint:
+      "Choose how far to walk, and get a shaded route with tasks along the way.",
+    freeWalkStart: "Set up a walk",
   },
   screens: {
     home: {
