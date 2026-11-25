@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-8);
+  padding: var(--space-4);
   background-color: var(--color-header-bg);
 }
 
@@ -34,9 +34,57 @@
   font-weight: 500;
 }
 
+/*
+ * Phones get the menu button: the nav row is wider than the screen. From the
+ * route screens' breakpoint up (screen.module.css), the full row shows.
+ */
 .nav {
-  display: flex;
+  display: none;
   gap: var(--space-4);
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem; /* a comfortable tap target */
+  block-size: 2.75rem;
+  padding: 0;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-header-text);
+  cursor: pointer;
+}
+
+.menuButton:hover,
+.menuButton[data-popup-open] {
+  border-color: var(--color-header-text);
+}
+
+.menuButton:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-header-text);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (min-width: 48rem) {
+  .header {
+    padding-inline: var(--space-8);
+  }
+
+  .nav {
+    display: flex;
+  }
+
+  .menuButton {
+    display: none;
+  }
+}
+
+/* Keeps the language names lined up whether or not they have the tick. */
+.menuCheck {
+  display: inline-flex;
+  inline-size: 1rem;
 }
 
 .languages {

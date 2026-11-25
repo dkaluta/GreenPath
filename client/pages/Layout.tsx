@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { Link, Outlet, useLocation } from "react-router";
-import { Spinner } from "../components";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Menu, Spinner } from "../components";
+import { CheckIcon, MenuIcon } from "../features/map/icons";
 import { useAuth } from "../lib/auth";
 import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
 import { LANG } from "../lib/config";
@@ -59,6 +60,7 @@ export function Layout() {
           {SHOW_DEMOS ? <Link to="/demos">Demos</Link> : null}
           <LanguageSwitcher />
         </nav>
+        <HeaderMenu />
       </header>
 
       <div className={styles.content}>
@@ -121,6 +123,59 @@ function AuthAction() {
         {t.nav.signOut}
       </button>
     </>
+  );
+}
+
+/**
+ * On a phone the links and the languages don't fit beside the app name, so
+ * they fold into this menu. Only one of it and the nav row shows at a time
+ * (Layout.module.css).
+ */
+function HeaderMenu() {
+  const navigate = useNavigate();
+
+  return (
+    <Menu
+      trigger={
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label={t.nav.menu}
+          title={t.nav.menu}
+        >
+          <MenuIcon />
+        </button>
+      }
+    >
+      <Menu.Item onClick={() => navigate("/")}>{t.nav.map}</Menu.Item>
+      <Menu.Item onClick={() => navigate("/collection")}>
+        {t.nav.collection}
+      </Menu.Item>
+      <Menu.Item
+        onClick={() => window.open(COURSE_GITHUB, "_blank", "noreferrer")}
+      >
+        GitHub
+      </Menu.Item>
+      {SHOW_DEMOS ? (
+        <Menu.Item onClick={() => navigate("/demos")}>Demos</Menu.Item>
+      ) : null}
+      <Menu.Separator />
+      {(Object.keys(LANGUAGES) as Lang[]).map((lang) => (
+        <Menu.Item
+          key={lang}
+          lang={lang}
+          dir={LANGUAGES[lang].dir}
+          onClick={() => {
+            if (lang !== LANG) setLanguage(lang);
+          }}
+        >
+          <span className={styles.menuCheck}>
+            {lang === LANG ? <CheckIcon size={16} /> : null}
+          </span>
+          {LANGUAGES[lang].name}
+        </Menu.Item>
+      ))}
+    </Menu>
   );
 }
 
