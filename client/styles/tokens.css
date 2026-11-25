@@ -79,8 +79,8 @@
 
   --color-success-subtle: color-mix(in oklab, var(--color-success), var(--color-surface) 92%);
 
-  /* The bar across the top of every page: the text colour, inverted. */
-  --color-header-bg: var(--color-leaf);
+  /* The bar across the top of every page: calm, like the map's controls. */
+  --color-header-bg: var(--color-surface);
   --color-header-text: var(--color-text);
 
   /* The dim layer behind a dialog. */

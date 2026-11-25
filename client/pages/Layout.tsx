@@ -1,8 +1,9 @@
 import { Suspense } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { Menu, Spinner } from "../components";
-import { CheckIcon, MenuIcon } from "../features/map/icons";
+import { CheckIcon, LeafIcon, MenuIcon } from "../features/map/icons";
 import { useAuth } from "../lib/auth";
+import { cx } from "../lib/cx";
 import { COURSE_CREDITS, COURSE_GITHUB, SHOW_DEMOS } from "../lib/config";
 import { LANG } from "../lib/config";
 import { LANGUAGES, setLanguage, t, type Lang } from "../lib/i18n";
@@ -13,6 +14,13 @@ import styles from "./Layout.module.css";
  * map screen's path here (for example "/route" once it shows a map).
  */
 const FULL_BLEED_PATHS = ["/"];
+
+/**
+ * Screens whose phone layout starts with a map. There the header floats over
+ * the map as two pills instead of taking a bar of its own (phones only - see
+ * .floating in Layout.module.css).
+ */
+const MAP_TOP_PATHS = ["/walk", "/route"];
 
 /**
  * The frame around every page: the bar at the top, the footer at the
@@ -47,17 +55,36 @@ export function Layout() {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
+      <header
+        className={cx(
+          styles.header,
+          MAP_TOP_PATHS.includes(pathname) && styles.floating,
+        )}
+      >
         <Link to="/" className={styles.appName}>
+          <LeafIcon className={styles.appMark} />
           {t.appName}
         </Link>
         <nav className={styles.nav}>
-          <Link to="/">{t.nav.map}</Link>
-          <Link to="/collection">{t.nav.collection}</Link>
-          <a href={COURSE_GITHUB} target="_blank" rel="noreferrer">
+          <NavLink to="/" end className={styles.navLink}>
+            {t.nav.map}
+          </NavLink>
+          <NavLink to="/collection" className={styles.navLink}>
+            {t.nav.collection}
+          </NavLink>
+          <a
+            href={COURSE_GITHUB}
+            target="_blank"
+            rel="noreferrer"
+            className={styles.navLink}
+          >
             GitHub
           </a>
-          {SHOW_DEMOS ? <Link to="/demos">Demos</Link> : null}
+          {SHOW_DEMOS ? (
+            <NavLink to="/demos" className={styles.navLink}>
+              Demos
+            </NavLink>
+          ) : null}
           <LanguageSwitcher />
         </nav>
         <HeaderMenu />
