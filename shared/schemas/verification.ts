@@ -4,7 +4,7 @@ import { pointSchema, streetSchema, treeIdSchema } from "./report";
 /*
  * Checking a tree the app asked about (screens 5 to 7: stop, photograph,
  * match). The table is
- * supabase/migrations/20261125120100_tree_verifications.sql.
+ * supabase/migrations/20261125140100_tree_verifications.sql.
  */
 
 export const VERIFICATION_ANSWERS = [

@@ -2,7 +2,7 @@
 -- then its leaves) and an answer to "is it the same tree as expected?".
 --
 -- Tree ids are external יע"ד ids stored as text, with no foreign key (see
--- 20261125120000_tree_reports.sql).
+-- 20261125140000_tree_reports.sql).
 
 create table if not exists public.tree_verifications (
   id uuid primary key default gen_random_uuid(),

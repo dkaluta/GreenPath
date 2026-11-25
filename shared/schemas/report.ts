@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /*
  * Reports people send while walking (screen 4a, "מה רואים כאן?").
- * The table is supabase/migrations/20261125120000_tree_reports.sql.
+ * The table is supabase/migrations/20261125140000_tree_reports.sql.
  */
 
 /** A tree id from the יער עירוני דיגיטלי dataset. Text, not a uuid. */

@@ -3,7 +3,7 @@ import { verificationAnswerSchema } from "./verification";
 
 /*
  * A finished walk (screen 8, the summary). The table is
- * supabase/migrations/20261125120200_walks.sql.
+ * supabase/migrations/20261125140200_walks.sql.
  */
 
 /** What the browser sends when a walk ends. */
