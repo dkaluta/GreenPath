@@ -317,16 +317,17 @@ const he = {
     go: "יוצאים",
     locating: "מאתרים את המיקום שלכם…",
     loading: "מחפשים את הצל…",
-    outsideArea: "מסלולים מוצלים זמינים בינתיים רק בגבעתיים.",
+    outsideArea:
+      "מסלולים מוצלים זמינים בינתיים בגבעתיים, ברמת גן, בעכו ובנתניה.",
     error: "לא הצלחנו למצוא מסלול. נסו שוב.",
     retry: "נסו שוב",
     pilotStart:
-      "אתם מחוץ לגבעתיים, עיר הפיילוט, אז ההליכה מתחילה במרכז גבעתיים.",
+      "אתם מחוץ לערים שיש לנו בהן נתוני צל, אז ההליכה מתחילה במרכז גבעתיים.",
     noDestination: "בחרו יעד במפה כדי לראות מסלולים.",
     example: "נסו מסלול לדוגמה בגבעתיים",
     map: "מפת המסלולים",
     credits:
-      "נתונים: © תורמי OpenStreetMap, יער עירוני דיגיטלי, CHMv2 של Meta ו-WRI",
+      "נתונים: © תורמי OpenStreetMap ‏(ODbL), יער עירוני דיגיטלי (ODbL), CHMv2 © Meta ו-WRI ‏(CC BY 4.0)",
   },
 };
 
@@ -657,16 +658,17 @@ const ar: Strings = {
     go: "انطلقوا",
     locating: "نحدد موقعكم…",
     loading: "نبحث عن الظل…",
-    outsideArea: "المسارات المظللة متاحة حاليًا في جفعاتايم فقط.",
+    outsideArea:
+      "المسارات المظللة متاحة حاليًا في جفعاتايم ورمات غان وعكا ونتانيا.",
     error: "لم نتمكن من إيجاد مسار. حاولوا مرة أخرى.",
     retry: "حاولوا مرة أخرى",
     pilotStart:
-      "أنتم خارج جفعاتايم، مدينة التجربة، لذا يبدأ المشي من مركز جفعاتايم.",
+      "أنتم خارج المدن التي لدينا فيها بيانات الظل، لذا يبدأ المشي من مركز جفعاتايم.",
     noDestination: "اختاروا وجهة على الخريطة لرؤية المسارات.",
     example: "جرّبوا مسارًا نموذجيًا في جفعاتايم",
     map: "خريطة المسارات",
     credits:
-      "البيانات: © مساهمو OpenStreetMap، الغابة الحضرية الرقمية، CHMv2 من Meta وWRI",
+      "البيانات: © مساهمو OpenStreetMap ‏(ODbL)، الغابة الحضرية الرقمية (ODbL)، CHMv2 © Meta وWRI ‏(CC BY 4.0)",
   },
 };
 
@@ -1000,16 +1002,17 @@ const en: Strings = {
     go: "Let's go",
     locating: "Finding where you are…",
     loading: "Looking for shade…",
-    outsideArea: "Shaded routes are only available in Givatayim for now.",
+    outsideArea:
+      "Shaded routes are available in Givatayim, Ramat Gan, Akko and Netanya for now.",
     error: "We couldn't find a route. Try again.",
     retry: "Try again",
     pilotStart:
-      "You're outside Givatayim, the pilot city, so the walk starts in central Givatayim.",
+      "You're outside the cities we have shade data for, so the walk starts in central Givatayim.",
     noDestination: "Pick a destination on the map to see routes.",
     example: "Try an example route in Givatayim",
     map: "Route map",
     credits:
-      "Data: © OpenStreetMap contributors, Digital Urban Forest, CHMv2 by Meta and WRI",
+      "Data: © OpenStreetMap contributors (ODbL), Digital Urban Forest (ODbL), CHMv2 © Meta and WRI (CC BY 4.0)",
   },
 };
 

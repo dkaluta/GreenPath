@@ -105,14 +105,17 @@ from, and why it is built this way. Status: **approved and built**
  │ יע"ד trees.csv ────────┼─► every street piece ─► shade score 0 to 1  │
  │ CHMv2 (HTTP ranges) ───┘   between OSM nodes                         │
  │                                                                      │
- │ outputs: server/data/givatayim-graph.json   nodes, edges, shade      │
- │          server/data/givatayim-trees.json   trees for /api/trees     │
- │          supabase/seed-trees.sql            the same, for the table  │
+ │ per city in shared/cities.ts:                                        │
+ │   server/data/<city>-graph.json   nodes, edges, shade                │
+ │   server/data/<city>-trees.json   trees for /api/trees               │
+ │   server/data/cities.json         every city's boundary and sizes    │
+ │   supabase/seed-trees/<city>.sql  the trees, for the table           │
  └──────────────────────────────────────────────────────────────────────┘
                      │ committed, credited (ODbL, CC BY)
                      ▼
- Workers: POST /api/routes ─► A* on the in-memory graph (server/lib/routing/)
-          GET /api/trees   ─► a grid index over the bundled trees
+ Workers: POST /api/routes ─► A* on the in-memory graph of the point's city
+          GET /api/trees   ─► a grid index over that city's bundled trees
+          GET /api/cities  ─► the supported cities (server/routes/cities.ts)
 ```
 
 Downloads are cached in `scripts/pilot/.cache/` (git-ignored). The national tree
@@ -123,10 +126,22 @@ curl -o scripts/pilot/.cache/trees.csv https://s3.eu-west-2.wasabisys.com/opentr
 ```
 
 ```bash
-npm run pilot:build
+npm run pilot:build                 # every city
+npm run pilot:build -- netanya      # one city
 ```
 
-A first run takes about a minute and a quarter; later runs are offline.
+Later runs are offline and take seconds. A first run is slow because of the
+street download: OSM streets come from the public Overpass servers in tiles of
+0.02° (about 2 km), and in November 2026 those servers failed most requests, so
+each tile took a few minutes of retries. Ramat Gan took 1.6 hours, Jerusalem
+2.7. Each tile is cached as it arrives, so a stopped build picks up where it
+was. (A faster way, if it is ever needed: cut the cities from Geofabrik's Israel
+extract, 122 MB, with a PBF reader as a dev dependency.)
+
+The build keeps only the streets within 300 m of the city's OSM boundary and the
+trees within 150 m of it. `--bbox-only` keeps everything in the city's box
+instead, which is how Givatayim was first built (so the old file is
+reproducible); clipped, Givatayim has 9,911 trees instead of 15,335.
 
 ### Shade score per street piece
 
@@ -153,9 +168,11 @@ origin against its quadkey so the pixels line up, and caches the window in
 
 ### The router
 
-- The graph for Givatayim and about 300 m around it: **9,666 nodes, 11,173
-  street pieces, 257 km**, 20% shaded overall. It is 284 KB of JSON (117 KB
-  gzipped), bundled into the Worker and parsed once per instance (~4 ms).
+- Each city's graph is bundled into the Worker as its own chunk, imported and
+  parsed the first time a request needs that city, then kept for the instance. A
+  point belongs to the city it is in, or to a city whose streets reach it (300 m
+  past the boundary). The sizes and timings per city are in
+  [Cities and the Worker's limits](#cities-and-the-workers-limits).
 - Edge weight: `length × (1 + β × (1 − shade)) × penalty`. β = 0 is the shortest
   route; higher β trades distance for shade. A*, guided by the straight-line
   distance, is exact because no street costs less than its length.
@@ -171,8 +188,9 @@ origin against its quadkey so the pixels line up, and caches the window in
 - Each route has a GeoJSON LineString, distance, time (at 1.33 m/s), shade share
   (length-weighted), shade per piece of the line, and the number of trees within
   15 m.
-- Points snap to the nearest graph node within 300 m. Anything further is an
-  `outside_pilot_area` error (422), which the screens show.
+- Points snap to the nearest graph node of their city within 300 m. A point
+  outside every bundled city is an `outside_pilot_area` error (422), which the
+  screens show, naming the cities that work.
 - Answers are kept in memory per Worker instance (200 of them, keyed by the
   request rounded to about 10 m). The CPU per request fits the free plan's 10
   ms; if it ever stops fitting, the ways out are the paid plan, fewer variants,
@@ -181,13 +199,14 @@ origin against its quadkey so the pixels line up, and caches the window in
 ### Trees API
 
 - `GET /api/trees?bbox=minLng,minLat,maxLng,maxLat` (at most 0.02° a side, about
-  2 km) returns up to 2,000 trees, from the bundled `givatayim-trees.json`
-  (15,335 trees in and just around Givatayim, 202 KB gzipped), with a one-hour
-  cache header. No database is needed.
+  2 km) returns up to 2,000 trees, from the bundled `<city>-trees.json` of every
+  city the box touches, with a one-hour cache header. No database is needed.
 - The same trees go in a `trees` table
-  (`supabase/migrations/20261125130000_trees.sql`, filled by running
-  `supabase/seed-trees.sql`), so reports and verifications can refer to a tree
-  by its יע"ד id.
+  (`supabase/migrations/20261125130000_trees.sql`), so reports and verifications
+  can refer to a tree by its יע"ד id. The build writes them as
+  `supabase/seed-trees/<city>.sql`; those files are large (65 MB for six
+  cities), so they are git-ignored and loaded by hand, for example
+  `psql "$DATABASE_URL" -f supabase/seed-trees/givatayim.sql`.
 
 ### What the data showed
 
@@ -205,13 +224,68 @@ origin against its quadkey so the pixels line up, and caches the window in
 ### What stays out of the first version
 
 - Time-of-day and building shadows, and ShadeMap on the map.
-- Cities other than the pilot. The same script works for another city (change
-  `CITY` and `AREA`); the bundle size sets how far it can go before moving the
-  graph to KV or R2, or to a self-hosted GraphHopper with the same shade values.
+- Tel Aviv-Yafo and Jerusalem in the deployed app (see below).
 - Turn-by-turn instructions (the navigation screen is another piece of work).
 - Drawing routes on the real map. The route screen draws a simple SVG sketch
   (`client/features/routes/RouteSketch.tsx`) until the shared map component
   lands.
+
+## Cities and the Worker's limits
+
+Measured 26 November 2026, on a laptop with Node 24 (a Worker is slower; treat
+the times as a lower bound). "Load" is importing, parsing and indexing a city's
+files, which happens once per Worker instance per city. Route times are over 40
+random routes of 1 to 3 km, and free walks of 30 minutes.
+
+| City          | Nodes   | Trees   | Graph + trees, gzipped | Load     | Memory | Route, median / max | Free walk, median / max |
+| ------------- | ------- | ------- | ---------------------- | -------- | ------ | ------------------- | ----------------------- |
+| Givatayim     | 7,013   | 9,911   | 82 + 125 KB            | 30 ms    | 8 MB   | 1.1 / 2.8 ms        | 1.4 / 4.4 ms            |
+| Ramat Gan     | 23,182  | 27,204  | 277 + 352 KB           | 75 ms    | 23 MB  | 1.6 / 4.5 ms        | 2.3 / 5.3 ms            |
+| Akko          | 12,480  | 38,891  | 143 + 405 KB           | 82 ms    | 29 MB  | 2.6 / 4.9 ms        | 3.3 / 6.8 ms            |
+| Netanya       | 22,716  | 34,170  | 269 + 442 KB           | 82 ms    | 28 MB  | 1.2 / 4.0 ms        | 2.6 / 16.5 ms           |
+| Tel Aviv-Yafo | 67,870  | 127,403 | 828 + 1,713 KB         | 353 ms   | 107 MB | 3.2 / 5.8 ms        | 4.6 / 10.0 ms           |
+| Jerusalem     | 158,109 | 361,834 | 1,877 + 4,761 KB       | 1,073 ms | 290 MB | 5.2 / 32.2 ms       | 13.0 / 42.0 ms          |
+
+Shade overall: Givatayim 22%, Ramat Gan 18%, Tel Aviv-Yafo 17%, Akko 13%,
+Jerusalem 10%, Netanya 8%. A few random pairs in each city (2 or 3 of 40) have
+no route, because the graph has small islands, such as a closed courtyard.
+
+A Worker can be at most **3 MB gzipped on the free plan** (10 MB on the paid
+one), gets **128 MB of memory**, and **10 ms of CPU** a request on the free
+plan. So:
+
+- **Four cities are bundled**: Givatayim, Ramat Gan, Akko and Netanya. The whole
+  Worker is 2.43 MB gzipped, which leaves room for about one more small city.
+- **Tel Aviv-Yafo and Jerusalem are built but not bundled.** With them the
+  Worker is 11.9 MB gzipped, over both plans' limits, and their parsed data
+  needs 107 MB and 290 MB of memory. They stay in `shared/cities.ts` (so
+  `npm run pilot:build` makes them) with `bundled: false`, which keeps them out
+  of the app's location check and the server's city list; their files are left
+  out of `FILES` in `server/lib/routing/cities.ts` and are git-ignored.
+- **The first request for a city pays for loading it**: 30 to 80 ms of CPU for
+  the bundled cities, over the free plan's 10 ms. Cloudflare lets an occasional
+  request go over; if the first requests start failing, the paid plan (30 s) is
+  the easy way out.
+
+### What to do for the big cities
+
+In order, each step needed only when the one before stops being enough:
+
+1. **Smaller files.** The JSON is the bulk of the size, the load time and the
+   memory. Writing the graph and trees as packed binary arrays (coordinates as
+   32-bit integers, shade as a byte) and reading them straight into typed arrays
+   would cut each to a fraction, with no parse step. Trees for the map need only
+   a position and a size; species can come from the database.
+2. **Data out of the bundle.** Put each city's files in R2 (or KV), read on
+   first use. That lifts the 3 MB limit, but not the memory or the load time.
+3. **Tiles instead of cities.** Cut the graph into tiles of a few kilometres,
+   and load only the tiles a route passes through (a 3 km walk touches two or
+   three). This is what makes Jerusalem fit in 128 MB.
+4. **A routing server.** Past that, a self-hosted GraphHopper or Valhalla with
+   the same shade values as a custom weight, on a small always-on machine.
+
+Steps 1 and 2 together are probably enough for Tel Aviv-Yafo. Jerusalem needs
+step 3 as well.
 
 ## Decisions (approved 25 November 2026)
 

@@ -3,6 +3,7 @@ import type { ApiError } from "@shared/index";
 import type { AppEnv } from "./env";
 import { fail } from "./lib/errors";
 import { requireAuth } from "./middleware/auth";
+import { cities } from "./routes/cities";
 import { collection } from "./routes/collection";
 import { events } from "./routes/events";
 import { health } from "./routes/health";
@@ -31,6 +32,7 @@ app.route("/api/health", health);
 // Shade routing and trees: public, so planning a walk needs no account.
 app.route("/api/routes", routes);
 app.route("/api/trees", trees);
+app.route("/api/cities", cities);
 
 // ---------------------------------------------------------------------------
 // Everything registered BELOW this line requires a logged-in user.

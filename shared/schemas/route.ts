@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { CITIES, cityArea, citiesNear } from "../cities";
+import { cityRefSchema } from "./city";
 
 /*
  * Walking routes: what the browser asks for and what the server answers.
@@ -13,23 +15,24 @@ export const WALK_SPEED_MPS = 1.33;
 /** One average step, in metres. */
 export const STEP_LENGTH_M = 0.75;
 
-/** The pilot area, where there is shade data: Givatayim and its edges. */
+/**
+ * The first pilot city, Givatayim: where a walk starts when the person is not
+ * in any supported city. The supported cities are in shared/cities.ts.
+ */
 export const PILOT_AREA = {
-  id: "givatayim",
-  /** [minLng, minLat, maxLng, maxLat] */
-  bbox: [34.7947, 32.0557, 34.8239, 32.0846] as const,
-  /** Where a walk starts when the person is not in the pilot area. */
-  center: { lat: 32.0712, lng: 34.8105 },
+  id: CITIES[0].id,
+  /** [minLng, minLat, maxLng, maxLat], with the margin around the city. */
+  bbox: cityArea(CITIES[0]),
+  center: CITIES[0].center,
 };
 
-export function isInPilotArea(point: LatLng) {
-  const [minLng, minLat, maxLng, maxLat] = PILOT_AREA.bbox;
-  return (
-    point.lng >= minLng &&
-    point.lng <= maxLng &&
-    point.lat >= minLat &&
-    point.lat <= maxLat
-  );
+/**
+ * True when the point is in or near one of the supported cities. A quick
+ * check by box for the browser; the server decides by the real boundary and
+ * answers `outside_pilot_area` when it is not.
+ */
+export function isInSupportedArea(point: LatLng) {
+  return citiesNear(point).length > 0;
 }
 
 // --- Request -------------------------------------------------------------------
@@ -128,7 +131,10 @@ export const routeSchema = z.object({
 });
 
 export const routesResponseSchema = z.object({
+  /** The city's id, e.g. "givatayim". Kept for older clients; see `city`. */
   area: z.string(),
+  /** The city whose street graph the routes were found on. */
+  city: cityRefSchema,
   /** Two to four routes, shadiest first. */
   routes: z.array(routeSchema).min(1).max(4),
 });

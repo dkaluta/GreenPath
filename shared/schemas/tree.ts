@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cityRefSchema } from "./city";
 
 /*
  * Street trees, as GET /api/trees returns them. The data comes from
@@ -55,6 +56,12 @@ export const treesQuerySchema = z.object({
 
 export const treesResponseSchema = z.object({
   trees: z.array(treeSchema),
+  /**
+   * The cities the trees came from: usually one, two or more when the box
+   * crosses a city line, none when the box is outside every supported city
+   * (then `trees` is empty).
+   */
+  cities: z.array(cityRefSchema),
   /** True when there were more than MAX_TREES and the list was cut. */
   truncated: z.boolean(),
 });
