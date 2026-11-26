@@ -1,5 +1,5 @@
 import {
-  isInPilotArea,
+  isInSupportedArea,
   PILOT_AREA,
   type LatLng,
   type RouteRequest,
@@ -60,8 +60,9 @@ export type Origin = {
 
 /**
  * Where a walk starts: the given point, else the person's location if it is
- * in the pilot area, else the middle of the pilot city. `null` while the
- * browser is still finding the location, or when `enabled` is false.
+ * in or near a supported city (shared/cities.ts), else the middle of
+ * Givatayim. `null` while the browser is still finding the location, or when
+ * `enabled` is false.
  */
 export function useOrigin(given: LatLng | null, enabled = true): Origin | null {
   const [located, setLocated] = useState<Origin | null>(null);
@@ -77,7 +78,7 @@ export function useOrigin(given: LatLng | null, enabled = true): Origin | null {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const point = { lat: coords.latitude, lng: coords.longitude };
-        if (isInPilotArea(point)) setLocated({ point, fallback: false });
+        if (isInSupportedArea(point)) setLocated({ point, fallback: false });
         else fallback();
       },
       fallback,

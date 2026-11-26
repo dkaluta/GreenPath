@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { CITIES, citiesNear } from "../cities";
 import {
-  isInPilotArea,
+  isInSupportedArea,
   PILOT_AREA,
   routeRequestSchema,
   routeSchema,
@@ -79,10 +80,18 @@ describe("routeSchema", () => {
   });
 });
 
-describe("isInPilotArea", () => {
+describe("isInSupportedArea", () => {
   it("knows Givatayim from Jerusalem", () => {
-    expect(isInPilotArea(PILOT_AREA.center)).toBe(true);
-    expect(isInPilotArea({ lat: 31.77, lng: 35.21 })).toBe(false);
+    expect(isInSupportedArea(PILOT_AREA.center)).toBe(true);
+    expect(isInSupportedArea({ lat: 31.77, lng: 35.21 })).toBe(false);
+  });
+
+  it("knows every bundled city, and only those", () => {
+    for (const city of CITIES) {
+      expect(isInSupportedArea(city.center), city.id).toBe(city.bundled);
+      if (city.bundled)
+        expect(citiesNear(city.center).map((c) => c.id)).toContain(city.id);
+    }
   });
 });
 

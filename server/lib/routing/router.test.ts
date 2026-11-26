@@ -1,7 +1,8 @@
-import { PILOT_AREA, targetToMeters } from "@shared/schemas/route";
-import { describe, expect, it } from "vitest";
+import { PILOT_AREA, targetToMeters, type Route } from "@shared/schemas/route";
+import { beforeAll, describe, expect, it } from "vitest";
 import { Graph, type RawGraph } from "./graph";
-import { pilotGraph, pilotTrees } from "./pilot";
+import { findCityConfig } from "@shared/cities";
+import { cityGraph, cityTrees } from "./cities";
 import {
   edgeCost,
   findPath,
@@ -128,9 +129,14 @@ describe("routeToDestination", () => {
 });
 
 describe("the Givatayim pilot graph", () => {
-  const graph = pilotGraph();
-  const trees = pilotTrees();
-  const countTrees = trees.countNear.bind(trees);
+  let graph: Graph;
+  let countTrees: (route: Route) => number;
+  beforeAll(async () => {
+    const givatayim = findCityConfig("givatayim")!;
+    graph = await cityGraph(givatayim);
+    const trees = await cityTrees(givatayim);
+    countTrees = trees.countNear.bind(trees);
+  });
 
   it("is loaded and has shade scores", () => {
     expect(graph.size).toBeGreaterThan(1000);

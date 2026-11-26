@@ -1,19 +1,28 @@
 /*
- * Builds the pilot city's shade-scored street graph and tree list.
+ * Builds a city's shade-scored street graph and tree list.
  *
- *     npm run pilot:build
+ *     npm run pilot:build                  # every city in shared/cities.ts
+ *     npm run pilot:build -- ramat-gan     # one or more cities, by id
+ *     npm run pilot:build -- givatayim --bbox-only
  *
- * Runs in Node (24+, which runs TypeScript directly), never on Workers. It:
+ * The cities (names, OSM boundary relation, box and centre) are configured in
+ * shared/cities.ts. Runs in Node (24+, which runs TypeScript directly), never
+ * on Workers. For each city it:
  *
- *   1. fetches the walkable streets around Givatayim from OpenStreetMap
- *      (Overpass API),
- *   2. cuts the pilot area's trees out of the national יער עירוני דיגיטלי
- *      CSV (1.6 GB, downloaded once into scripts/pilot/.cache/),
+ *   1. fetches the city's boundary (Nominatim) and its walkable streets
+ *      (Overpass API) from OpenStreetMap,
+ *   2. cuts the city's trees out of the national יער עירוני דיגיטלי CSV
+ *      (1.6 GB, downloaded once into scripts/pilot/.cache/; one pass over the
+ *      file serves every city being built),
  *   3. reads the CHMv2 canopy-height raster for the area straight from AWS,
  *      with HTTP range requests (only the 512 px tiles it needs),
- *   4. scores every street segment from 0 (full sun) to 1 (full shade), and
- *   5. writes server/data/givatayim-graph.json, server/data/givatayim-trees.json
- *      and supabase/seed-trees.sql.
+ *   4. scores every street segment from 0 (full sun) to 1 (full shade),
+ *   5. keeps the streets within 300 m of the boundary and the trees within
+ *      150 m of it (with --bbox-only: everything in the city's box plus those
+ *      margins, which is how the Givatayim pilot was first built), and
+ *   6. writes server/data/<id>-graph.json, server/data/<id>-trees.json,
+ *      supabase/seed-trees/<id>.sql and the city's entry in
+ *      server/data/cities.json (its boundary and sizes).
  *
  * Everything downloaded is kept in scripts/pilot/.cache/ (git-ignored), so a
  * second run is offline and quick. Delete a file there to fetch it again.
@@ -28,35 +37,69 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 import { fromUrl } from "geotiff";
+import { CITIES, cityArea, type CityConfig } from "../../shared/cities.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
 const CACHE = join(HERE, ".cache");
 mkdirSync(CACHE, { recursive: true });
 
-// --- The pilot area -------------------------------------------------------
+// --- The city being built ------------------------------------------------------
 
-/** Givatayim's municipal boundary (OSM relation 1382923), as a bbox. */
-const CITY = {
-  minLng: 34.7979,
-  minLat: 32.0584,
-  maxLng: 34.8207,
-  maxLat: 32.0819,
-};
+type Box = { minLng: number; minLat: number; maxLng: number; maxLat: number };
+
+/*
+ * The steps below work on one city at a time, and `useCity` points them at
+ * it. This is a script, so module state is simpler than passing a context
+ * through every function.
+ */
+/** The city's municipal box. */
+let CITY: Box;
 /** About 300 m around it, so routes can use the streets at the edge. */
-const AREA = {
-  minLng: 34.7947,
-  minLat: 32.0557,
-  maxLng: 34.8239,
-  maxLat: 32.0846,
-};
+let AREA: Box;
+/** This city's downloads: its OSM streets, boundary and cut of the CSV. */
+let CITY_CACHE: string;
+let M_PER_DEG_LNG: number;
+
+function useCity(city: CityConfig) {
+  const [minLng, minLat, maxLng, maxLat] = city.bbox;
+  CITY = { minLng, minLat, maxLng, maxLat };
+  AREA = toBox(cityArea(city));
+  CITY_CACHE = join(CACHE, city.id);
+  mkdirSync(CITY_CACHE, { recursive: true });
+  M_PER_DEG_LNG = mPerDegLng(AREA);
+}
+
+function toBox([minLng, minLat, maxLng, maxLat]: readonly number[]): Box {
+  return { minLng, minLat, maxLng, maxLat };
+}
+
+function mPerDegLng(box: Box) {
+  return 111_320 * Math.cos((((box.minLat + box.maxLat) / 2) * Math.PI) / 180);
+}
+
+/** Streets are kept this far outside the boundary. */
+const STREET_MARGIN_M = 300;
+/** Trees are kept this far outside the boundary. */
+const TREE_MARGIN_M = 150;
 
 const TREES_CSV_URL =
   "https://s3.eu-west-2.wasabisys.com/opentreebase-public/processed/trees/trees.csv";
 const CHM_BASE =
   "https://dataforgood-fb-data.s3.amazonaws.com/forests/v2/global/dinov3_global_chm_v2_ml3/chm";
-const OVERPASS = "https://overpass-api.de/api/interpreter";
+/**
+ * Tried in turn: the public Overpass servers are often busy. Set
+ * OVERPASS_URL to try another server first.
+ */
+const OVERPASS = [
+  ...(process.env.OVERPASS_URL ? [process.env.OVERPASS_URL] : []),
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+const NOMINATIM = "https://nominatim.openstreetmap.org/lookup";
 const USER_AGENT = "GreenPath-pilot-build/0.1 (shade routing research)";
 
 // --- Shade model ------------------------------------------------------------
@@ -86,10 +129,8 @@ type Tree = {
 };
 
 const M_PER_DEG_LAT = 111_320;
-const M_PER_DEG_LNG =
-  111_320 * Math.cos((((AREA.minLat + AREA.maxLat) / 2) * Math.PI) / 180);
 
-function inBox(lng: number, lat: number, box: typeof AREA) {
+function inBox(lng: number, lat: number, box: Box) {
   return (
     lng >= box.minLng &&
     lng <= box.maxLng &&
@@ -145,34 +186,83 @@ const FOOTPATHS = new Set([
   "track",
 ]);
 
-async function fetchOsm(): Promise<{
-  ways: OsmWay[];
-  nodes: Map<number, OsmNode>;
-}> {
-  const file = join(CACHE, "osm.json");
-  if (!existsSync(file)) {
-    const box = `${AREA.minLat},${AREA.minLng},${AREA.maxLat},${AREA.maxLng}`;
-    const query = `[out:json][timeout:120];way["highway"](${box});(._;>;);out body;`;
-    for (let attempt = 0, wait = 5000; ; attempt++, wait *= 2) {
-      console.log(`Fetching OSM streets (attempt ${attempt + 1})...`);
-      const response = await fetch(OVERPASS, {
+/** Size of one OSM download tile, in degrees (about 2 km). */
+const OSM_TILE_DEG = 0.02;
+
+/** One Overpass query for the streets in a box, retried across servers. */
+async function fetchOverpass(box: string): Promise<string> {
+  const query = `[out:json][timeout:110];way["highway"](${box});(._;>;);out body;`;
+  for (let attempt = 0, wait = 10_000; ; attempt++) {
+    const server = OVERPASS[attempt % OVERPASS.length];
+    let status: number | string;
+    try {
+      const response = await fetch(server, {
         method: "POST",
         headers: {
           "User-Agent": USER_AGENT,
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(120_000),
       });
-      if (response.ok) {
-        await writeFile(file, await response.text());
-        break;
-      }
-      if (attempt >= 5) throw new Error(`Overpass failed: ${response.status}`);
-      console.log(
-        `  Overpass said ${response.status}; waiting ${wait / 1000}s`,
-      );
-      await sleep(wait);
+      const text = await response.text();
+      // A busy server can answer 200 with an error in place of the data.
+      if (response.ok && text.startsWith("{") && text.includes('"elements"'))
+        return text;
+      status = response.status;
+    } catch (error) {
+      status = String(error);
     }
+    if (attempt >= 29) throw new Error(`Overpass failed: ${status}`);
+    console.log(`  ${server}: ${status}; waiting ${wait / 1000}s`);
+    await sleep(wait);
+    if (attempt % OVERPASS.length === OVERPASS.length - 1)
+      wait = Math.min(wait * 2, 120_000);
+  }
+}
+
+async function fetchOsm(): Promise<{
+  ways: OsmWay[];
+  nodes: Map<number, OsmNode>;
+}> {
+  const file = join(CITY_CACHE, "osm.json");
+  if (!existsSync(file)) {
+    // One query for a whole city is too much for the public Overpass servers
+    // when they are busy (502/504 for minutes on end), so the area is
+    // fetched in tiles, each cached on its own so a stopped build resumes
+    // where it left off, then merged.
+    const tilesDir = join(CITY_CACHE, "osm-tiles");
+    mkdirSync(tilesDir, { recursive: true });
+    const cols = Math.max(
+      1,
+      Math.ceil((AREA.maxLng - AREA.minLng) / OSM_TILE_DEG),
+    );
+    const rows = Math.max(
+      1,
+      Math.ceil((AREA.maxLat - AREA.minLat) / OSM_TILE_DEG),
+    );
+    const width = (AREA.maxLng - AREA.minLng) / cols;
+    const height = (AREA.maxLat - AREA.minLat) / rows;
+    const elements = new Map<string, unknown>();
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const tile = join(tilesDir, `${row}-${col}.json`);
+        if (!existsSync(tile)) {
+          const minLat = AREA.minLat + row * height;
+          const minLng = AREA.minLng + col * width;
+          const box = `${minLat},${minLng},${minLat + height},${minLng + width}`;
+          console.log(`OSM tile ${row * cols + col + 1} of ${rows * cols}`);
+          await writeFile(tile, await fetchOverpass(box));
+        }
+        const data = JSON.parse(await readFile(tile, "utf8")) as {
+          elements: { type: string; id: number }[];
+        };
+        // A way crossing a tile edge comes back in both tiles: keep one.
+        for (const element of data.elements)
+          elements.set(`${element.type}/${element.id}`, element);
+      }
+    }
+    await writeFile(file, JSON.stringify({ elements: [...elements.values()] }));
   }
   const data = JSON.parse(await readFile(file, "utf8")) as {
     elements: (({ type: "way" } & OsmWay) | ({ type: "node" } & OsmNode))[];
@@ -184,6 +274,88 @@ async function fetchOsm(): Promise<{
     else if (element.type === "way") ways.push(element);
   }
   return { ways, nodes };
+}
+
+/**
+ * The municipal boundary, as GeoJSON MultiPolygon coordinates, simplified by
+ * Nominatim to about 10 m (0.0001°). Small enough to ship with the server,
+ * which uses it to tell which city a point is in.
+ */
+type Boundary = LngLat[][][];
+
+async function fetchBoundary(city: CityConfig): Promise<Boundary> {
+  const file = join(CITY_CACHE, "boundary.json");
+  if (!existsSync(file)) {
+    console.log(`Fetching the boundary of OSM relation ${city.osmRelation}...`);
+    const url = `${NOMINATIM}?format=json&osm_ids=R${city.osmRelation}&polygon_geojson=1&polygon_threshold=0.0001`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT },
+    });
+    if (!response.ok) throw new Error(`Nominatim failed: ${response.status}`);
+    await writeFile(file, await response.text());
+    await sleep(1100); // Nominatim's limit is one request a second.
+  }
+  const [place] = JSON.parse(await readFile(file, "utf8")) as {
+    geojson: { type: string; coordinates: unknown };
+  }[];
+  if (!place) throw new Error(`No boundary for relation ${city.osmRelation}`);
+  const polygons =
+    place.geojson.type === "Polygon"
+      ? [place.geojson.coordinates as LngLat[][]]
+      : place.geojson.type === "MultiPolygon"
+        ? (place.geojson.coordinates as LngLat[][][])
+        : null;
+  if (!polygons) throw new Error(`The boundary is a ${place.geojson.type}`);
+  return polygons.map((rings) =>
+    rings.map((ring) =>
+      ring.map(([lng, lat]) => [
+        Math.round(lng * 1e5) / 1e5,
+        Math.round(lat * 1e5) / 1e5,
+      ]),
+    ),
+  );
+}
+
+/** Even-odd test over every ring, so holes are left out. */
+function insideBoundary(lng: number, lat: number, boundary: Boundary) {
+  let inside = false;
+  for (const polygon of boundary) {
+    for (const ring of polygon) {
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [xi, yi] = ring[i];
+        const [xj, yj] = ring[j];
+        if (
+          yi > lat !== yj > lat &&
+          lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi
+        )
+          inside = !inside;
+      }
+    }
+  }
+  return inside;
+}
+
+/** Metres from a point to the boundary: 0 inside it. */
+function metresFromBoundary(lng: number, lat: number, boundary: Boundary) {
+  if (insideBoundary(lng, lat, boundary)) return 0;
+  let best = Infinity;
+  for (const polygon of boundary) {
+    for (const ring of polygon) {
+      for (let i = 0; i + 1 < ring.length; i++) {
+        const [ax, ay] = ring[i];
+        const [bx, by] = ring[i + 1];
+        const x = (lng - ax) * M_PER_DEG_LNG;
+        const y = (lat - ay) * M_PER_DEG_LAT;
+        const dx = (bx - ax) * M_PER_DEG_LNG;
+        const dy = (by - ay) * M_PER_DEG_LAT;
+        const len2 = dx * dx + dy * dy;
+        const t =
+          len2 > 0 ? Math.max(0, Math.min(1, (x * dx + y * dy) / len2)) : 0;
+        best = Math.min(best, Math.hypot(x - t * dx, y - t * dy));
+      }
+    }
+  }
+  return best;
 }
 
 function isWalkable(tags: Record<string, string>) {
@@ -229,11 +401,37 @@ function num(value: string | undefined) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-async function loadTrees(): Promise<Tree[]> {
-  const cached = join(CACHE, "trees-area.json");
-  if (existsSync(cached))
-    return JSON.parse(await readFile(cached, "utf8")) as Tree[];
+/**
+ * Each city's trees (in its AREA), from the per-city cache, or else from one
+ * pass over the national CSV for all the cities not cached yet.
+ */
+async function loadTrees(cities: CityConfig[]): Promise<Map<string, Tree[]>> {
+  const result = new Map<string, Tree[]>();
+  const missing: CityConfig[] = [];
+  for (const city of cities) {
+    const cached = join(CACHE, city.id, "trees-area.json");
+    if (existsSync(cached))
+      result.set(city.id, JSON.parse(await readFile(cached, "utf8")) as Tree[]);
+    else missing.push(city);
+  }
+  if (missing.length > 0) {
+    const read = await readTreesCsv(
+      missing.map((city) => toBox(cityArea(city))),
+    );
+    for (const [k, city] of missing.entries()) {
+      mkdirSync(join(CACHE, city.id), { recursive: true });
+      await writeFile(
+        join(CACHE, city.id, "trees-area.json"),
+        JSON.stringify(read[k]),
+      );
+      result.set(city.id, read[k]);
+    }
+  }
+  return result;
+}
 
+/** The trees in each box, one list per box, from one pass over the CSV. */
+async function readTreesCsv(boxes: Box[]): Promise<Tree[][]> {
   const csv = join(CACHE, "trees.csv");
   if (!existsSync(csv)) {
     throw new Error(
@@ -247,7 +445,7 @@ async function loadTrees(): Promise<Tree[]> {
   });
   let header: string[] | null = null;
   let pending = "";
-  const trees: Tree[] = [];
+  const lists: Tree[][] = boxes.map(() => []);
   for await (const raw of lines) {
     // A quoted field may contain a newline: keep reading until quotes balance.
     const line = pending ? `${pending}\n${raw}` : raw;
@@ -264,9 +462,10 @@ async function loadTrees(): Promise<Tree[]> {
     const col = (name: string) => cells[header!.indexOf(name)];
     const lng = Number(col("location-x"));
     const lat = Number(col("location-y"));
-    if (!inBox(lng, lat, AREA)) continue;
+    const wanted = boxes.flatMap((box, k) => (inBox(lng, lat, box) ? [k] : []));
+    if (wanted.length === 0) continue;
     const canopyDiameter = num(col("attributes-canopy-diameter"));
-    trees.push({
+    const tree: Tree = {
       id: col("meta-tree-id") || `idx-${col("idx")}`,
       lng,
       lat,
@@ -279,23 +478,24 @@ async function loadTrees(): Promise<Tree[]> {
         (canopyDiameter ? Math.PI * (canopyDiameter / 2) ** 2 : null),
       source:
         col("meta-collection-type") === "חישה מרחוק" ? "canopy" : "survey",
-    });
+    };
+    for (const k of wanted) lists[k].push(tree);
   }
-  // The same tree can come from a survey and from the canopy map; keep one
-  // per id, preferring the survey (it has the species).
-  const byId = new Map<string, Tree>();
-  for (const tree of trees) {
-    const existing = byId.get(tree.id);
-    if (
-      !existing ||
-      (existing.source === "canopy" && tree.source === "survey")
-    ) {
-      byId.set(tree.id, tree);
+  return lists.map((trees) => {
+    // The same tree can come from a survey and from the canopy map; keep one
+    // per id, preferring the survey (it has the species).
+    const byId = new Map<string, Tree>();
+    for (const tree of trees) {
+      const existing = byId.get(tree.id);
+      if (
+        !existing ||
+        (existing.source === "canopy" && tree.source === "survey")
+      ) {
+        byId.set(tree.id, tree);
+      }
     }
-  }
-  const unique = [...byId.values()];
-  await writeFile(cached, JSON.stringify(unique));
-  return unique;
+    return [...byId.values()];
+  });
 }
 
 // --- 3. Canopy height from CHMv2 ----------------------------------------------
@@ -364,11 +564,56 @@ class CanopyGrid {
   }
 }
 
+/** Reads one window of a CHMv2 tile over HTTP range requests. */
+async function readChmWindow(
+  key: string,
+  tx: number,
+  ty: number,
+  window: [number, number, number, number],
+): Promise<Uint8Array> {
+  const tileM = (2 * EARTH) / 2 ** CHM_ZOOM;
+  const tiff = await fromUrl(`${CHM_BASE}/${key}.tif`);
+  const image = await tiff.getImage();
+  // Check the tile is where its quadkey says, so pixels line up.
+  const [originX, originY] = image.getOrigin();
+  const expectX = tx * tileM - EARTH;
+  const expectY = EARTH - ty * tileM;
+  if (
+    image.getWidth() !== CHM_SIZE ||
+    Math.abs(originX - expectX) > 1 ||
+    Math.abs(originY - expectY) > 1
+  ) {
+    throw new Error(`CHMv2 tile ${key} is not laid out as expected`);
+  }
+  const raster = await image.readRasters({
+    window,
+    samples: [0],
+    interleave: true,
+  });
+  return new Uint8Array(raster as unknown as ArrayLike<number>);
+}
+
+/** Retries a network read a few times, since S3 sometimes drops a connection. */
+async function withRetries<T>(what: string, read: () => Promise<T>) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await read();
+    } catch (error) {
+      if (attempt >= 5 || (error as Error).message.includes("not laid out"))
+        throw error;
+      const wait = 5 * attempt;
+      console.log(
+        `  ${what}: ${(error as Error).message}; retrying in ${wait}s`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, wait * 1000));
+    }
+  }
+}
+
 async function loadCanopy(): Promise<CanopyGrid> {
   const [minX, minY] = toChmPixel(AREA.minLng, AREA.maxLat).map(Math.floor);
   const [maxX, maxY] = toChmPixel(AREA.maxLng, AREA.minLat).map(Math.ceil);
   const grid = new CanopyGrid(minX, minY, maxX - minX, maxY - minY);
-  const tileM = (2 * EARTH) / 2 ** CHM_ZOOM;
 
   for (
     let ty = Math.floor(minY / CHM_SIZE);
@@ -400,25 +645,9 @@ async function loadCanopy(): Promise<CanopyGrid> {
         console.log(
           `Reading CHMv2 tile ${key} (${width} x ${bottom - top} px)...`,
         );
-        const tiff = await fromUrl(`${CHM_BASE}/${key}.tif`);
-        const image = await tiff.getImage();
-        // Check the tile is where its quadkey says, so pixels line up.
-        const [originX, originY] = image.getOrigin();
-        const expectX = tx * tileM - EARTH;
-        const expectY = EARTH - ty * tileM;
-        if (
-          image.getWidth() !== CHM_SIZE ||
-          Math.abs(originX - expectX) > 1 ||
-          Math.abs(originY - expectY) > 1
-        ) {
-          throw new Error(`CHMv2 tile ${key} is not laid out as expected`);
-        }
-        const raster = await image.readRasters({
-          window: [left, top, right, bottom],
-          samples: [0],
-          interleave: true,
-        });
-        pixels = new Uint8Array(raster as unknown as ArrayLike<number>);
+        pixels = await withRetries(`CHMv2 tile ${key}`, () =>
+          readChmWindow(key, tx, ty, [left, top, right, bottom]),
+        );
         mkdirSync(dirname(cacheFile), { recursive: true });
         await writeFile(cacheFile, pixels);
       }
@@ -512,12 +741,53 @@ function shadeOf(
 
 // --- 5. Build and write ---------------------------------------------------------
 
-async function main() {
+const SOURCES =
+  "© OpenStreetMap contributors (ODbL); יער עירוני דיגיטלי (ODbL); CHMv2 © Meta and WRI (CC BY 4.0)";
+
+/** What server/data/cities.json holds for each city. */
+type CityIndexEntry = {
+  built: string;
+  /** GeoJSON MultiPolygon coordinates of the municipal boundary. */
+  boundary: Boundary;
+  trees: number;
+  nodes: number;
+  edges: number;
+  km: number;
+  shaded: number;
+  graphBytes: number;
+  treesBytes: number;
+  graphGzipBytes: number;
+  treesGzipBytes: number;
+  buildSeconds: number;
+};
+
+async function buildCity(
+  city: CityConfig,
+  trees: Tree[],
+  bboxOnly: boolean,
+): Promise<CityIndexEntry> {
+  const started = performance.now();
+  useCity(city);
+  console.log(`\n== ${city.name.en} (${city.id})`);
+  const boundary = await fetchBoundary(city);
   const { ways, nodes } = await fetchOsm();
-  const trees = await loadTrees();
   const canopy = await loadCanopy();
   const treeIndex = new TreeIndex(trees);
   console.log(`${ways.length} OSM ways, ${trees.length} trees in the area`);
+
+  /** Is an OSM node close enough to the city to keep? Memoised per node. */
+  const nearCity = new Map<number, boolean>();
+  const keepNode = (osmId: number) => {
+    if (bboxOnly) return true;
+    let near = nearCity.get(osmId);
+    if (near === undefined) {
+      const node = nodes.get(osmId)!;
+      near =
+        metresFromBoundary(node.lon, node.lat, boundary) <= STREET_MARGIN_M;
+      nearCity.set(osmId, near);
+    }
+    return near;
+  };
 
   // Graph nodes are the OSM nodes of walkable ways; edges are consecutive pairs.
   const nodeIndex = new Map<number, number>();
@@ -539,6 +809,8 @@ async function main() {
       FOOTPATHS.has(way.tags.highway) || way.tags.footway !== undefined;
     for (let k = 0; k + 1 < way.nodes.length; k++) {
       if (!nodes.has(way.nodes[k]) || !nodes.has(way.nodes[k + 1])) continue;
+      // A piece is kept when either end is near the city.
+      if (!keepNode(way.nodes[k]) && !keepNode(way.nodes[k + 1])) continue;
       const a = indexOf(way.nodes[k]);
       const b = indexOf(way.nodes[k + 1]);
       if (a === b) continue;
@@ -576,13 +848,12 @@ async function main() {
   const origin: LngLat = [AREA.minLng, AREA.minLat];
   const graph = {
     version: 1,
-    area: "givatayim",
+    area: city.id,
     bbox: [AREA.minLng, AREA.minLat, AREA.maxLng, AREA.maxLat],
     city: [CITY.minLng, CITY.minLat, CITY.maxLng, CITY.maxLat],
     origin,
     built: new Date().toISOString().slice(0, 10),
-    sources:
-      "© OpenStreetMap contributors (ODbL); יער עירוני דיגיטלי (ODbL); CHMv2 © Meta and WRI (CC BY 4.0)",
+    sources: SOURCES,
     // Node i is at origin + (nodes[2i], nodes[2i+1]) millionths of a degree.
     nodes: outCoords.flatMap(([lng, lat]) => [
       Math.round((lng - origin[0]) * 1e6),
@@ -598,38 +869,39 @@ async function main() {
   };
   const dataDir = join(ROOT, "server", "data");
   mkdirSync(dataDir, { recursive: true });
-  await writeFile(join(dataDir, "givatayim-graph.json"), JSON.stringify(graph));
+  const graphJson = JSON.stringify(graph);
+  await writeFile(join(dataDir, `${city.id}-graph.json`), graphJson);
 
   // Trees in the city itself (plus a little margin) for the map and the API.
   const MARGIN = 0.0015;
   const cityTrees = trees.filter((t) =>
-    inBox(t.lng, t.lat, {
-      minLng: CITY.minLng - MARGIN,
-      minLat: CITY.minLat - MARGIN,
-      maxLng: CITY.maxLng + MARGIN,
-      maxLat: CITY.maxLat + MARGIN,
-    }),
+    bboxOnly
+      ? inBox(t.lng, t.lat, {
+          minLng: CITY.minLng - MARGIN,
+          minLat: CITY.minLat - MARGIN,
+          maxLng: CITY.maxLng + MARGIN,
+          maxLat: CITY.maxLat + MARGIN,
+        })
+      : metresFromBoundary(t.lng, t.lat, boundary) <= TREE_MARGIN_M,
   );
   cityTrees.sort((x, y) => x.lat - y.lat || x.lng - y.lng);
-  await writeFile(
-    join(dataDir, "givatayim-trees.json"),
-    JSON.stringify({
-      version: 1,
-      sources: "יער עירוני דיגיטלי (ODbL)",
-      // [id, lng, lat, species he, species en, genus, height m, canopy m², source]
-      trees: cityTrees.map((t) => [
-        t.id,
-        Number(t.lng.toFixed(6)),
-        Number(t.lat.toFixed(6)),
-        t.speciesHe,
-        t.speciesEn,
-        t.genus,
-        t.heightM,
-        t.canopyM2 === null ? null : Math.round(t.canopyM2 * 10) / 10,
-        t.source,
-      ]),
-    }),
-  );
+  const treesJson = JSON.stringify({
+    version: 1,
+    sources: "יער עירוני דיגיטלי (ODbL)",
+    // [id, lng, lat, species he, species en, genus, height m, canopy m², source]
+    trees: cityTrees.map((t) => [
+      t.id,
+      Number(t.lng.toFixed(6)),
+      Number(t.lat.toFixed(6)),
+      t.speciesHe,
+      t.speciesEn,
+      t.genus,
+      t.heightM,
+      t.canopyM2 === null ? null : Math.round(t.canopyM2 * 10) / 10,
+      t.source,
+    ]),
+  });
+  await writeFile(join(dataDir, `${city.id}-trees.json`), treesJson);
 
   // The same trees as SQL, for the `trees` table (see supabase/migrations/).
   const sql = (v: string | number | null) =>
@@ -640,7 +912,7 @@ async function main() {
         : `'${v.replace(/'/g, "''")}'`;
   const rows = cityTrees.map(
     (t) =>
-      `(${[t.id, t.lng, t.lat, t.speciesHe, t.speciesEn, t.genus, t.heightM, t.canopyM2 === null ? null : Math.round(t.canopyM2 * 10) / 10, t.source, "givatayim"].map(sql).join(", ")})`,
+      `(${[t.id, t.lng, t.lat, t.speciesHe, t.speciesEn, t.genus, t.heightM, t.canopyM2 === null ? null : Math.round(t.canopyM2 * 10) / 10, t.source, city.id].map(sql).join(", ")})`,
   );
   const chunks: string[] = [];
   for (let i = 0; i < rows.length; i += 1000) {
@@ -648,16 +920,85 @@ async function main() {
       `insert into public.trees (id, lng, lat, species_he, species_en, genus, height_m, canopy_m2, source, area) values\n${rows.slice(i, i + 1000).join(",\n")}\non conflict (id) do nothing;`,
     );
   }
+  const seedDir = join(ROOT, "supabase", "seed-trees");
+  mkdirSync(seedDir, { recursive: true });
   await writeFile(
-    join(ROOT, "supabase", "seed-trees.sql"),
+    join(seedDir, `${city.id}.sql`),
     `-- Generated by scripts/pilot/build.ts. Do not edit by hand.\n-- Source: יער עירוני דיגיטלי (ODbL).\n\n${chunks.join("\n\n")}\n`,
   );
 
   const shaded = outEdges.reduce((s, e) => s + e.shade * e.length, 0);
   const total = outEdges.reduce((s, e) => s + e.length, 0);
+  const entry: CityIndexEntry = {
+    built: graph.built,
+    boundary,
+    trees: cityTrees.length,
+    nodes: outCoords.length,
+    edges: outEdges.length,
+    km: Math.round(total / 100) / 10,
+    shaded: Math.round((shaded / total) * 100) / 100,
+    graphBytes: Buffer.byteLength(graphJson),
+    treesBytes: Buffer.byteLength(treesJson),
+    graphGzipBytes: gzipSync(graphJson).length,
+    treesGzipBytes: gzipSync(treesJson).length,
+    buildSeconds: Math.round((performance.now() - started) / 100) / 10,
+  };
   console.log(
-    `Graph: ${outCoords.length} nodes, ${outEdges.length} edges, ${(total / 1000).toFixed(1)} km, ` +
-      `${Math.round((shaded / total) * 100)}% shaded overall. ${cityTrees.length} trees written.`,
+    `Graph: ${entry.nodes} nodes, ${entry.edges} edges, ${entry.km} km, ` +
+      `${Math.round(entry.shaded * 100)}% shaded overall. ${entry.trees} trees written.\n` +
+      `Files: graph ${kb(entry.graphBytes)} (${kb(entry.graphGzipBytes)} gzipped), ` +
+      `trees ${kb(entry.treesBytes)} (${kb(entry.treesGzipBytes)} gzipped). ` +
+      `${entry.buildSeconds}s (not counting the pass over the CSV).`,
+  );
+  return entry;
+}
+
+function kb(bytes: number) {
+  return `${Math.round(bytes / 1024).toLocaleString("en")} KB`;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const bboxOnly = args.includes("--bbox-only");
+  const ids = args.filter((arg) => !arg.startsWith("--"));
+  const cities: CityConfig[] = ids.length
+    ? ids.map((id) => {
+        const city = CITIES.find((c) => c.id === id);
+        if (!city) {
+          throw new Error(
+            `Unknown city "${id}". Known: ${CITIES.map((c) => c.id).join(", ")}`,
+          );
+        }
+        return city;
+      })
+    : [...CITIES];
+
+  const csvStarted = performance.now();
+  const trees = await loadTrees(cities);
+  console.log(
+    `Trees for ${cities.length} cities in ${Math.round((performance.now() - csvStarted) / 1000)}s`,
+  );
+
+  const indexFile = join(ROOT, "server", "data", "cities.json");
+  const index = existsSync(indexFile)
+    ? (JSON.parse(await readFile(indexFile, "utf8")) as {
+        cities: Record<string, CityIndexEntry>;
+      })
+    : { cities: {} };
+  for (const city of cities) {
+    index.cities[city.id] = await buildCity(
+      city,
+      trees.get(city.id)!,
+      bboxOnly,
+    );
+  }
+  // Keep the order of shared/cities.ts, and only cities still listed there.
+  const ordered: Record<string, CityIndexEntry> = {};
+  for (const city of CITIES)
+    if (index.cities[city.id]) ordered[city.id] = index.cities[city.id];
+  await writeFile(
+    indexFile,
+    JSON.stringify({ version: 1, sources: SOURCES, cities: ordered }),
   );
 }
 

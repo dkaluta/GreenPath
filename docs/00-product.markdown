@@ -185,10 +185,12 @@ for Arabic, regular and bold. Buttons and controls are pill-shaped
 - **Data**: Meta's CHMv2 canopy-height map, יער עירוני דיגיטלי, and the ShadeMap
   API for computing and showing shadows.
 - **Navigation**: a shade-aware routing algorithm on OpenStreetMap data.
-  **Decided and built**: our own small router on Workers over a precomputed
-  street graph of the pilot city (Givatayim), each street piece scored for shade
-  from יער עירוני דיגיטלי trees and CHMv2 canopy heights. ShadeMap is left for
-  later, as a map layer. See [6. Shade routing](06-shade-routing.markdown).
+  **Decided and built**: our own small router on Workers over precomputed street
+  graphs, one per supported city (Givatayim, the pilot, then Ramat Gan, Akko and
+  Netanya; Tel Aviv-Yafo and Jerusalem are built but too big to bundle yet),
+  each street piece scored for shade from יער עירוני דיגיטלי trees and CHMv2
+  canopy heights. ShadeMap is left for later, as a map layer. See
+  [6. Shade routing](06-shade-routing.markdown).
 - **Tree photos**: users are asked to photograph trees, with as little friction
   as possible.
 

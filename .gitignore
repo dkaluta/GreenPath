@@ -35,3 +35,10 @@ coverage/
 
 # The pilot build script's downloads (1.6 GB of tree data, OSM, CHMv2)
 scripts/pilot/.cache/
+
+# Built by `npm run pilot:build` but not committed: the trees as SQL (65 MB for
+# six cities; load them by hand, see docs/06-shade-routing.markdown), and the
+# two cities too big to bundle with the Worker.
+supabase/seed-trees/
+server/data/tel-aviv-yafo-*.json
+server/data/jerusalem-*.json
