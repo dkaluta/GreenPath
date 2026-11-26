@@ -5,7 +5,15 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist/**", ".wrangler/**", "worker-configuration.d.ts"] },
+  {
+    ignores: [
+      "dist/**",
+      ".wrangler/**",
+      "worker-configuration.d.ts",
+      // Other sessions' git worktrees live here.
+      ".claude/**",
+    ],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
